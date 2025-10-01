@@ -1,0 +1,29 @@
+# Configuración de ejemplo para PRODUCCIÓN
+# NO usar estas credenciales en producción real
+
+# Base de datos
+spring.datasource.url=jdbc:postgresql://localhost:5432/vocatio_prod
+spring.datasource.username=${DB_USERNAME:postgres}
+spring.datasource.password=${DB_PASSWORD:secure_password_here}
+
+# JWT - CAMBIAR ESTOS VALORES EN PRODUCCIÓN
+jwt.secret=${JWT_SECRET:your-super-secure-jwt-secret-key-256-bits-minimum}
+jwt.access-token-ttl=PT15M
+jwt.refresh-token-ttl=PT168H
+jwt.remember-me-ttl=P30D
+
+# Hibernate en producción
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=false
+
+# Logging
+logging.level.com.acme.vocatio=INFO
+logging.level.org.springframework.security=WARN
+
+# Puerto del servidor
+server.port=${PORT:8080}
+
+# Configuración adicional de seguridad
+server.error.include-message=never
+server.error.include-binding-errors=never
