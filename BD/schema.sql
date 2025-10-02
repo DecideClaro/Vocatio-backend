@@ -8,10 +8,10 @@
 -- \c vocatio_db;
 
 -- =============================================================================
--- MÓDULO 1: AUTENTICACIÓN Y USUARIOS (COMPATIBLE CON CÓDIGO ACTUAL)
+-- MÓDULO 1: AUTENTICACIÓN Y USUARIOS
 -- =============================================================================
 
--- Tabla principal de usuarios (MANTIENE nombres actuales para compatibilidad)
+-- Tabla principal de usuarios
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -33,7 +33,7 @@ SELECT
     CASE WHEN is_active THEN 'activo' ELSE 'inactivo' END as estado_cuenta
 FROM users;
 
--- Tabla de perfiles (MANTIENE estructura actual)
+-- Tabla de perfiles
 CREATE TABLE profiles (
     id_usuario BIGINT PRIMARY KEY,
     name VARCHAR(255),
@@ -43,7 +43,7 @@ CREATE TABLE profiles (
     CONSTRAINT fk_profiles_user FOREIGN KEY (id_usuario) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Tabla PerfilUsuario (EXTENSIÓN de profiles para funcionalidades futuras)
+-- Tabla PerfilUsuario
 CREATE TABLE PerfilUsuario (
     id_usuario BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     nombre VARCHAR(100),
@@ -57,7 +57,7 @@ CREATE TABLE PerfilUsuario (
     ultima_fecha_actividad DATE
 );
 
--- Tabla de tokens de refresco (MANTIENE estructura actual)
+-- Tabla de tokens de refresco
 CREATE TABLE refresh_tokens (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE refresh_tokens (
     CONSTRAINT fk_refresh_tokens_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Tabla RefreshToken (ALIAS para compatibilidad futura)
+-- Tabla RefreshToken
 CREATE VIEW RefreshToken AS
 SELECT
     id,
@@ -79,7 +79,7 @@ SELECT
 FROM refresh_tokens;
 
 -- =============================================================================
--- MÓDULO 2: CATÁLOGO DE CARRERAS (COMPATIBLE + EXTENDIDO)
+-- MÓDULO 2: CATÁLOGO DE CARRERAS
 -- =============================================================================
 
 -- Tabla de carreras (MANTIENE nombres actuales)
@@ -167,7 +167,7 @@ CREATE TABLE carreraUniversidad (
 CREATE VIEW CarreraUniversidad AS SELECT * FROM carreraUniversidad;
 
 -- =============================================================================
--- MÓDULO 4: SISTEMA DE FAVORITOS (COMPATIBLE)
+-- MÓDULO 4: SISTEMA DE FAVORITOS
 -- =============================================================================
 
 -- Tabla de favoritos (MANTIENE nombre actual)
@@ -182,7 +182,7 @@ CREATE TABLE usuariofavoritos (
 CREATE VIEW UsuarioFavoritos AS SELECT * FROM usuariofavoritos;
 
 -- =============================================================================
--- MÓDULO 5: SISTEMA DE TEST VOCACIONAL (COMPATIBLE + EXTENDIDO)
+-- MÓDULO 5: SISTEMA DE TEST VOCACIONAL
 -- =============================================================================
 
 -- Tabla de tests vocacionales (MANTIENE nombre actual)
@@ -257,7 +257,7 @@ CREATE TABLE resultadoPorArea (
 CREATE VIEW ResultadoPorArea AS SELECT * FROM resultadoPorArea;
 
 -- =============================================================================
--- MÓDULO 6: MATERIAL EDUCATIVO (COMPATIBLE)
+-- MÓDULO 6: MATERIAL EDUCATIVO
 -- =============================================================================
 
 CREATE TABLE materialeducativo (
@@ -442,38 +442,3 @@ INSERT INTO testvocacional (nombre_test, descripcion, version_test) VALUES
 ('Test de Orientación Vocacional Básico', 'Evaluación inicial de intereses y aptitudes', '1.0')
 ON CONFLICT DO NOTHING;
 
--- =============================================================================
--- NOTAS DE COMPATIBILIDAD
--- =============================================================================
-
-/*
-ESTRATEGIA DE COMPATIBILIDAD IMPLEMENTADA:
-
-1. TABLAS PRINCIPALES CON NOMBRES ACTUALES:
-   ✅ users, profiles, refresh_tokens (mantienen código actual funcionando)
-   ✅ carrera, usuariofavoritos, testintento (compatible con entidades JPA)
-
-2. VISTAS/ALIAS PARA CÓDIGO FUTURO:
-   ✅ Usuario, PerfilUsuario, RefreshToken (nombres futuros)
-   ✅ Permite migración gradual sin romper código existente
-
-3. NUEVAS TABLAS PARA FUNCIONALIDADES FUTURAS:
-   ✅ Sistema completo de test vocacional
-   ✅ Material educativo y logros
-   ✅ Sistema de recomendaciones
-
-4. BENEFICIOS:
-   ✅ Código actual sigue funcionando sin cambios
-   ✅ Nuevas funcionalidades pueden usar nombres futuros
-   ✅ Migración gradual posible
-   ✅ Base de datos completa desde el inicio
-
-PARA USAR:
-- El código actual seguirá funcionando igual
-- Las nuevas funcionalidades pueden usar las vistas con nombres futuros
-- Migración sin downtime posible
-*/
-
--- =============================================================================
--- FIN DEL SCRIPT HÍBRIDO
--- =============================================================================
