@@ -47,7 +47,7 @@ public class PdfDownloadService {
             .orElseThrow(() -> new FileNotDownloadableException("Recurso no encontrado"));
 
         // Validar que sea un recurso PDF
-        if (resource.getTipoRecurso() != TipoRecurso.PDF) {
+        if (resource.getTipoRecurso() != TipoRecurso.pdf) {
             throw new FileNotDownloadableException("El recurso no es un archivo PDF descargable");
         }
 
@@ -112,7 +112,7 @@ public class PdfDownloadService {
      */
     public boolean isResourceDownloadable(Long resourceId) {
         return learningResourceRepository.findById(resourceId)
-            .map(resource -> resource.getTipoRecurso() == TipoRecurso.PDF)
+            .map(resource -> resource.getTipoRecurso() == TipoRecurso.pdf)
             .orElse(false);
     }
 }

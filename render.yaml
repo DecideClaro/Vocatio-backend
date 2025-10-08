@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: vocatio-backend
+    runtime: docker
+    plan: free
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JWT_SECRET
+        generateValue: true
+    healthCheckPath: /actuator/health
+
+databases:
+  - name: vocatio-database
+    databaseName: vocatio_db
+    user: vocatio_user
+    plan: free

@@ -9,22 +9,22 @@ public enum TipoRecurso {
     /**
      * Archivo PDF descargable.
      */
-    PDF("PDF", true, false),
+    pdf("PDF", true, false),
     
     /**
      * Video en línea o descargable.
      */
-    VIDEO("Video", false, true),
+    video("Video", false, true),
     
     /**
      * Enlace externo a sitio web.
      */
-    ENLACE("Enlace Externo", false, true),
+    enlace("Enlace Externo", false, true),
     
     /**
      * Testimonio de estudiante o profesional.
      */
-    TESTIMONIO("Testimonio", false, true);
+    testimonio("Testimonio", false, true);
     
     private final String descripcion;
     private final boolean esDescargable;
