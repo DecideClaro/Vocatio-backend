@@ -1,5 +1,6 @@
 package com.acme.vocatio.security;
 
+import com.acme.vocatio.config.PublicEndpointRegistry;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,6 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final PublicEndpointRegistry publicEndpointRegistry;
 
     @Override
     protected void doFilterInternal(
@@ -32,10 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String path = resolvePathWithinApplication(request);
-
-        // ✅ Whitelist: Swagger / OpenAPI / Health / Auth deben pasar sin JWT
-        if (isPublicPath(path)) {
+        if (publicEndpointRegistry.isPublicRequest(request)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -74,36 +73,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean isPublicPath(String servletPath) {
-        // Importante: SIN /api/v1; el servletPath ya viene sin el context-path
-        return servletPath.startsWith("/v3/api-docs")
-                || servletPath.startsWith("/swagger-ui")
-                || servletPath.equals("/swagger-ui.html")
-                || servletPath.startsWith("/swagger-resources")
-                || servletPath.startsWith("/webjars")
-                || servletPath.startsWith("/actuator/health")
-                || servletPath.equals("/actuator")
-                || servletPath.equals("/api")
-                || servletPath.startsWith("/api/")
-                || servletPath.startsWith("/auth/")
-                || servletPath.equals("/");
-    }
-
-    private String resolvePathWithinApplication(HttpServletRequest request) {
-        String requestUri = request.getRequestURI();
-        String contextPath = request.getContextPath();
-
-        String path = (requestUri == null || requestUri.isBlank()) ? "/" : requestUri;
-        String ctx = (contextPath == null) ? "" : contextPath;
-
-        if (!ctx.isEmpty() && path.startsWith(ctx)) {
-            path = path.substring(ctx.length());
-        }
-
-        if (path.isEmpty()) {
-            return "/";
-        }
-
-        return path.startsWith("/") ? path : "/" + path;
-    }
 }

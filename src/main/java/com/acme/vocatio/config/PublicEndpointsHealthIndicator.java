@@ -18,6 +18,7 @@ public class PublicEndpointsHealthIndicator implements HealthIndicator {
         Map<String, Object> detail = new LinkedHashMap<>();
         detail.put("contextPath", publicEndpointRegistry.getContextPath());
         detail.put("basePatterns", publicEndpointRegistry.getBasePatterns());
+        detail.put("readOnlyGetPatterns", publicEndpointRegistry.getReadOnlyGetPatterns());
         detail.put("exposedEndpoints", publicEndpointRegistry.getExposedEndpoints());
 
         return Health.up().withDetail("publicEndpoints", detail).build();

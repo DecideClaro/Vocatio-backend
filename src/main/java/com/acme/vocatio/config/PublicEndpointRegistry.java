@@ -1,9 +1,12 @@
 package com.acme.vocatio.config;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
@@ -27,14 +30,23 @@ public class PublicEndpointRegistry {
             "/actuator/health"
     );
 
+    private static final List<String> READ_ONLY_GET_PATTERNS = List.of(
+            "/api/careers",
+            "/api/careers/**"
+    );
+
     private final ServerProperties serverProperties;
 
     public List<String> getBasePatterns() {
         return BASE_PATTERNS;
     }
 
+    public List<String> getReadOnlyGetPatterns() {
+        return READ_ONLY_GET_PATTERNS;
+    }
+
     public List<String> getExposedEndpoints() {
-        return BASE_PATTERNS.stream()
+        return Stream.concat(BASE_PATTERNS.stream(), READ_ONLY_GET_PATTERNS.stream())
                 .map(this::withContextPath)
                 .distinct()
                 .toList();
@@ -44,6 +56,20 @@ public class PublicEndpointRegistry {
         return BASE_PATTERNS.stream()
                 .map(this::contextAwareMatcher)
                 .toArray(RequestMatcher[]::new);
+    }
+
+    public RequestMatcher[] asReadOnlyGetMatchers() {
+        return READ_ONLY_GET_PATTERNS.stream()
+                .map(pattern -> contextAwareMatcher(pattern, HttpMethod.GET))
+                .toArray(RequestMatcher[]::new);
+    }
+
+    public boolean isPublicRequest(jakarta.servlet.http.HttpServletRequest request) {
+        return Stream.concat(
+                        Arrays.stream(asRequestMatchers()),
+                        Arrays.stream(asReadOnlyGetMatchers())
+                )
+                .anyMatch(matcher -> matcher.matches(request));
     }
 
     public String getContextPath() {
@@ -61,6 +87,18 @@ public class PublicEndpointRegistry {
     private RequestMatcher contextAwareMatcher(String pattern) {
         final String normalizedPattern = normalizePattern(pattern);
         return request -> {
+            String path = normalizeRequestUri(request.getRequestURI(), request.getContextPath());
+            return PATH_MATCHER.match(normalizedPattern, path);
+        };
+    }
+
+    private RequestMatcher contextAwareMatcher(String pattern, HttpMethod method) {
+        final String normalizedPattern = normalizePattern(pattern);
+        return request -> {
+            if (method != null && !method.matches(request.getMethod())) {
+                return false;
+            }
+
             String path = normalizeRequestUri(request.getRequestURI(), request.getContextPath());
             return PATH_MATCHER.match(normalizedPattern, path);
         };
