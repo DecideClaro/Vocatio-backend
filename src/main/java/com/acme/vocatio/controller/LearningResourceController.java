@@ -21,7 +21,7 @@ import java.util.Map;
  * Endpoints para ver materiales sugeridos por carrera, área vocacional y gestionar favoritos.
  */
 @RestController
-@RequestMapping("/api/learning-resources")
+@RequestMapping("/learning-resources")
 @RequiredArgsConstructor
 public class LearningResourceController {
 

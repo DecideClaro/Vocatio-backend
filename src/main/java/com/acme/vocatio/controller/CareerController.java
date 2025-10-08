@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
  * Casos de uso: M3-01 (listar) y M3-02 (filtrar).
  */
 @RestController
-@RequestMapping("/api/careers")
+@RequestMapping("/careers")
 @RequiredArgsConstructor
 public class CareerController {
 

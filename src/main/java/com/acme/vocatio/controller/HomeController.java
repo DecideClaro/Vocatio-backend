@@ -8,6 +8,6 @@ public class HomeController {
 
     @GetMapping("/")
     public String home() {
-        return "¡Bienvenido a Vocatio API! Visita /swagger-ui/swagger-ui.html para explorar los endpoints.";
+        return "¡Bienvenido a Vocatio API! Visita /api/v1/swagger-ui/index.html para explorar los endpoints.";
     }
 }
