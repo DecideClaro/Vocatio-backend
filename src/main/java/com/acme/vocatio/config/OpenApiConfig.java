@@ -23,20 +23,20 @@ public class OpenApiConfig {
                             API REST completa para la plataforma de orientación vocacional Vocatio.
                             
                             **Módulos disponibles:**
-                            - 🔐 **Autenticación**: Registro, login y gestión de usuarios
-                            - 📚 **Recursos de Aprendizaje**: Gestión de materiales educativos
-                            - 🎓 **Carreras**: Exploración y recomendaciones vocacionales
-                            - 🤖 **Chatbot**: Asistente virtual de orientación
-                            - 👤 **Perfiles**: Gestión de datos personales
+                            - **Autenticación**: Registro, login y gestión de usuarios
+                            - **Recursos de Aprendizaje**: Gestión de materiales educativos
+                            - **Carreras**: Exploración y recomendaciones vocacionales
+                            - **Chatbot**: Asistente virtual de orientación
+                            - **Perfiles**: Gestión de datos personales
                             
                             **Características:**
                             - Autenticación JWT
                             - Descarga de PDFs
-                            - Validación de enlaces externos  
+                            - Validación de enlaces externos
                             - Gestión de favoritos
                             - Recomendaciones personalizadas
                             
-                            **🔑 Para usar la autenticación:**
+                            ** Para usar la autenticación:**
                             1. Haz login en `/auth/login` para obtener el accessToken
                             2. Copia el accessToken de la respuesta
                             3. Haz clic en "Authorize" (🔒) en la parte superior
