@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+
+# Maven
+target/
+!target/vocatio-0.0.1-SNAPSHOT.jar
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Render
+render.yaml
+
+# Local env files
+.env*
+!.env.example
+
+# Documentation
+README.md
+*.md
+
+# Tests
+src/test/
+
+# Postman
+postman/

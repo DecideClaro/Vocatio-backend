@@ -17,7 +17,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,39 +29,24 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
+    private final PublicEndpointRegistry publicEndpointRegistry;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF off para API stateless
                 .csrf(csrf -> csrf.disable())
-                // CORS habilitado (ver bean abajo)
-                .cors(cors -> {})
-                // Stateless: usamos JWT
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Rutas públicas usando AntPathRequestMatcher
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                AntPathRequestMatcher.antMatcher("/"),
-                                AntPathRequestMatcher.antMatcher("/auth/register"),
-                                AntPathRequestMatcher.antMatcher("/auth/login"),
-                                AntPathRequestMatcher.antMatcher("/v3/api-docs/**"),
-                                AntPathRequestMatcher.antMatcher("/swagger-ui/**"),
-                                AntPathRequestMatcher.antMatcher("/swagger-ui.html"),
-                                AntPathRequestMatcher.antMatcher("/swagger-resources/**"),
-                                AntPathRequestMatcher.antMatcher("/webjars/**")
-                        ).permitAll()
+                        .requestMatchers(publicEndpointRegistry.asRequestMatchers()).permitAll()
+                        .requestMatchers(publicEndpointRegistry.asReadOnlyGetMatchers()).permitAll()
                         .anyRequest().authenticated()
                 )
-                // 401 cuando no hay autenticación válida
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((req, res, e) ->
-                                res.sendError(HttpServletResponse.SC_UNAUTHORIZED))
-                )
-                // Provider con UserDetailsService + BCrypt
                 .authenticationProvider(authenticationProvider())
-                // Filtro JWT antes del UsernamePasswordAuthenticationFilter
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(
+                        (req, res, e) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                ));
 
         return http.build();
     }
@@ -74,7 +58,7 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        var authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
@@ -85,17 +69,17 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // CORS permisivo (ajustar en dominios de prod)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        var cfg = new CorsConfiguration();
-        cfg.addAllowedOriginPattern("*");
-        cfg.addAllowedHeader("*");
-        cfg.addAllowedMethod("*");
-        cfg.setAllowCredentials(true);
+        var configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(java.util.List.of("*"));
+        configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(java.util.List.of("*"));
+        configuration.setAllowCredentials(true);
 
         var source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", cfg);
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 }

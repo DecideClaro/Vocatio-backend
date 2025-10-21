@@ -4,6 +4,7 @@ import com.acme.vocatio.model.SavedResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -41,5 +42,9 @@ public interface SavedResourceRepository extends JpaRepository<SavedResource, Sa
      */
     @Query("SELECT sr.id.resourceId FROM SavedResource sr WHERE sr.id.userId = :userId")
     List<Long> findResourceIdsByUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("DELETE FROM SavedResource sr WHERE sr.id.userId = :userId")
+    void deleteAllByUserId(@Param("userId") Long userId);
 }
 

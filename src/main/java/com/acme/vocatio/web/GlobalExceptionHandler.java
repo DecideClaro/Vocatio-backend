@@ -1,7 +1,13 @@
 package com.acme.vocatio.web;
 
+import com.acme.vocatio.exception.CareerNotFoundException;
 import com.acme.vocatio.exception.DuplicateEmailException;
+import com.acme.vocatio.exception.InvalidAccountDeletionConfirmationException;
 import com.acme.vocatio.exception.InvalidCredentialsException;
+import com.acme.vocatio.exception.InvalidCurrentPasswordException;
+import com.acme.vocatio.exception.InvalidPersonalDataException;
+import com.acme.vocatio.exception.InvalidPasswordChangeException;
+import com.acme.vocatio.exception.PasswordChangeRateLimitException;
 import com.acme.vocatio.exception.UserNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import java.util.HashMap;
@@ -67,9 +73,59 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
+    /** Error cuando la confirmación de borrado no es válida. */
+    @ExceptionHandler(InvalidAccountDeletionConfirmationException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidDeletionConfirmation(
+            InvalidAccountDeletionConfirmationException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    /** Contraseña actual incorrecta al intentar actualizarla. */
+    @ExceptionHandler(InvalidCurrentPasswordException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidCurrentPassword(InvalidCurrentPasswordException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    /** Indica errores al actualizar datos personales. */
+    @ExceptionHandler(InvalidPersonalDataException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidPersonalData(InvalidPersonalDataException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        return ResponseEntity.badRequest().body(body);
+    }
+
+    /** Error cuando la contraseña nueva no cumple la política. */
+    @ExceptionHandler(InvalidPasswordChangeException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidPasswordChange(InvalidPasswordChangeException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        return ResponseEntity.badRequest().body(body);
+    }
+
+    /** Indica que se alcanzó el límite de intentos de cambio de contraseña. */
+    @ExceptionHandler(PasswordChangeRateLimitException.class)
+    public ResponseEntity<Map<String, Object>> handlePasswordChangeRateLimit(PasswordChangeRateLimitException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        body.put("retryAfterSeconds", ex.retryAfterSeconds());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(body);
+    }
+
     /** Avisa cuando no se encontró al usuario. */
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    /** Respuesta consistente cuando una carrera no existe. */
+    @ExceptionHandler(CareerNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleCareerNotFound(CareerNotFoundException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);

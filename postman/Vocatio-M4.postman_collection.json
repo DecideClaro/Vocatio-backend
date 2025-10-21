@@ -1,0 +1,1131 @@
+{
+    "info": {
+        "_postman_id": "c6c2d7c6-3d7a-4dc3-9a7a-0b6f630e08d2",
+        "name": "Vocatio API - Modulo 4",
+        "description": "Coleccion de pruebas funcionales para el Modulo 4 (Ruta de aprendizaje). Valida materiales sugeridos, categorias por carrera/area y gestion de favoritos.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "M4-00 \u00b7 Preparacion",
+            "description": "Escenarios base para crear usuario QA del modulo 4 y dejar variables listas para los flujos de materiales.",
+            "item": [
+                {
+                    "name": "M4-00 \u00b7 Registro usuario QA",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const uuid = pm.variables.replaceIn('{{$randomUUID}}');",
+                                    "const email = `qa.m4.${uuid}@vocatio.test`.toLowerCase();",
+                                    "pm.collectionVariables.set('m4UserEmail', email);",
+                                    "pm.collectionVariables.set('m4UserPassword', pm.collectionVariables.get('testPassword') || 'Password1');",
+                                    "pm.collectionVariables.set('accessToken', '');",
+                                    "pm.collectionVariables.set('refreshToken', '');",
+                                    "pm.collectionVariables.set('learningResourceSampleCareerId', '');",
+                                    "pm.collectionVariables.set('learningResourceSampleCareerName', '');",
+                                    "pm.collectionVariables.set('learningResourceSampleAreaId', '');",
+                                    "pm.collectionVariables.set('learningResourceSampleResourceId', '');",
+                                    "pm.collectionVariables.set('learningResourceExternalUrl', '');",
+                                    "pm.collectionVariables.set('learningResourceIsExternal', 'false');",
+                                    "pm.collectionVariables.set('learningResourceFavoriteId', '');",
+                                    "pm.collectionVariables.set('learningResourceFavoriteCountBefore', '0');",
+                                    "pm.collectionVariables.set('learningResourceFavoriteCountAfter', '0');",
+                                    "pm.collectionVariables.set('learningResourceSavedSignature', '');",
+                                    "pm.collectionVariables.set('learningResourceSavedListPayload', '');",
+                                    "pm.collectionVariables.set('learningResourceRecommendedPayload', '');",
+                                    "pm.collectionVariables.set('learningResourceSavedAfterRelogin', '');",
+                                    "pm.collectionVariables.set('learningResourceInterestsParam', '');",
+                                    "pm.collectionVariables.set('learningResourceDownloadableResourceId', '');",
+                                    "pm.collectionVariables.set('learningResourceDownloadFilename', '');",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkId', '');",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkTitle', '');",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkUrl', '');",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkListPayload', '');",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkCountBefore', '0');",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkCountAfter', '0');",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkCountFinal', '0');"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 201 en registro QA M4', function () { pm.response.to.have.status(201); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Registro retorna correo esperado', function () { pm.expect(json.user.email).to.eql(pm.collectionVariables.get('m4UserEmail')); });",
+                                    "pm.test('Registro entrega token de acceso', function () { pm.expect(json.tokens.accessToken).to.be.a('string').and.not.empty; });",
+                                    "pm.collectionVariables.set('accessToken', json.tokens.accessToken);",
+                                    "pm.collectionVariables.set('refreshToken', json.tokens.refreshToken || '');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{m4UserEmail}}\",\n  \"password\": \"{{m4UserPassword}}\",\n  \"rememberMe\": false\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-00 \u00b7 Login usuario QA",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 en login QA M4', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Login retorna token de acceso usable', function () { pm.expect(json.tokens.accessToken).to.be.a('string').and.not.empty; });",
+                                    "pm.collectionVariables.set('accessToken', json.tokens.accessToken);",
+                                    "pm.collectionVariables.set('refreshToken', json.tokens.refreshToken || '');",
+                                    "pm.collectionVariables.set('accessTokenExpiresAt', json.tokens.accessTokenExpiresAt || '');",
+                                    "pm.collectionVariables.set('refreshTokenExpiresAt', json.tokens.refreshTokenExpiresAt || '');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{m4UserEmail}}\",\n  \"password\": \"{{m4UserPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M4-01 \u00b7 Ruta de aprendizaje",
+            "description": "Validacion de materiales sugeridos por carrera, area e intereses principales.",
+            "item": [
+                {
+                    "name": "M4-01 \u00b7 Obtener carrera base",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al listar carreras para ruta', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Respuesta de carreras incluye arreglo', function () { pm.expect(json.careers).to.be.an('array'); });",
+                                    "if ((json.careers || []).length > 0) {",
+                                    "  const first = json.careers[0];",
+                                    "  pm.collectionVariables.set('learningResourceSampleCareerId', first && first.id ? String(first.id) : '');",
+                                    "  pm.collectionVariables.set('learningResourceSampleCareerName', first && first.nombre ? first.nombre : '');",
+                                    "  pm.test('Carrera base cuenta con nombre y modalidad', function () { pm.expect(first).to.have.property('nombre'); pm.expect(first).to.have.property('modalidad'); });",
+                                    "} else {",
+                                    "  pm.collectionVariables.set('learningResourceSampleCareerId', '');",
+                                    "}",
+                                    "pm.collectionVariables.set('careerListPayloadForLearning', JSON.stringify(json));"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/careers?page=0&size=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "careers"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-01 \u00b7 Recursos sugeridos por carrera",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const careerId = pm.collectionVariables.get('learningResourceSampleCareerId');",
+                                    "if (!careerId) { throw new Error('Se requiere una carrera de referencia para solicitar recursos.'); }"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al consultar recursos por carrera', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.collectionVariables.set('learningResourceRecommendedPayload', JSON.stringify(json));",
+                                    "pm.test('Respuesta incluye arreglo de recursos', function () { pm.expect(json.resources).to.be.an('array'); });",
+                                    "pm.test('Incluye metadatos de paginacion de recursos', function () { pm.expect(json).to.have.property('currentPage'); pm.expect(json).to.have.property('totalPages'); pm.expect(json).to.have.property('totalElements'); });",
+                                    "const resources = json.resources || [];",
+                                    "pm.test('Todos los recursos devueltos pertenecen a la carrera base', function () { const expected = Number(pm.collectionVariables.get('learningResourceSampleCareerId')); const everyMatch = resources.every(function (res) { return !res || res.careerId === undefined || res.careerId === null || res.careerId === expected; }); pm.expect(everyMatch, 'CareerId consistente').to.be.true; });",
+                                    "if (resources.length > 0) {",
+                                    "  const first = resources[0];",
+                                    "  pm.collectionVariables.set('learningResourceSampleResourceId', first.id ? String(first.id) : '');",
+                                    "  pm.collectionVariables.set('learningResourceSampleAreaId', first.areaInteresId ? String(first.areaInteresId) : '');",
+                                    "  pm.collectionVariables.set('learningResourceExternalUrl', first.urlRecurso || '');",
+                                    "  pm.collectionVariables.set('learningResourceIsExternal', first.esEnlaceExterno ? 'true' : 'false');",
+                                    "  pm.test('Material muestra titulo y descripcion', function () { pm.expect(first).to.have.property('titulo'); pm.expect(first).to.have.property('descripcion'); });",
+                                    "  pm.test('Material categoriza tipo de recurso permitido', function () { pm.expect(['PDF','VIDEO','ENLACE','TESTIMONIO']).to.include(first.tipoRecurso); });",
+                                    "  if (first.esEnlaceExterno) {",
+                                    "    pm.test('URL externa usa http/https', function () { pm.expect(first.urlRecurso).to.match(/^https?:\\/\\//i); });",
+                                    "  }",
+                                    "} else {",
+                                    "  pm.collectionVariables.set('learningResourceSampleResourceId', '');",
+                                    "}",
+                                    "pm.test('Mensaje contextual corresponde a carrera', function () { pm.expect(json.message).to.eql('Recursos encontrados para la carrera'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/learning-resources/by-career/{{learningResourceSampleCareerId}}?size=20",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "learning-resources",
+                                "by-career",
+                                "{{learningResourceSampleCareerId}}"
+                            ],
+                            "query": [
+                                {
+                                    "key": "size",
+                                    "value": "20"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-01 \u00b7 Recursos sugeridos por area",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const areaId = pm.collectionVariables.get('learningResourceSampleAreaId');",
+                                    "if (!areaId) { throw new Error('No se pudo identificar un area de interes desde los recursos por carrera.'); }"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al consultar recursos por area', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje contextual corresponde a area', function () { pm.expect(json.message).to.eql('Recursos encontrados para el \u00e1rea de inter\u00e9s'); });",
+                                    "const resources = json.resources || [];",
+                                    "pm.test('Recursos por area respetan id filtrado', function () { const expected = Number(pm.collectionVariables.get('learningResourceSampleAreaId')); const everyMatch = resources.every(function (res) { return !res || res.areaInteresId === undefined || res.areaInteresId === null || res.areaInteresId === expected; }); pm.expect(everyMatch, 'AreaInteres consistente').to.be.true; });",
+                                    "pm.test('Recursos incluyen indicador de favorito', function () { resources.forEach(function (res) { pm.expect(res).to.have.property('isSaved'); }); });",
+                                    "pm.collectionVariables.set('learningResourceInterestsParam', String(pm.collectionVariables.get('learningResourceSampleAreaId')));",
+                                    "pm.collectionVariables.set('learningResourceAreaPayload', JSON.stringify(json));"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/learning-resources/by-area/{{learningResourceSampleAreaId}}?size=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "learning-resources",
+                                "by-area",
+                                "{{learningResourceSampleAreaId}}"
+                            ],
+                            "query": [
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-01 \u00b7 Recursos por intereses principales",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const areaParam = pm.collectionVariables.get('learningResourceInterestsParam');",
+                                    "if (!areaParam) { throw new Error('Se requiere al menos un area para consultar recomendaciones por intereses.'); }"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 en recursos por intereses', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const resources = json.resources || [];",
+                                    "pm.test('Mensaje corresponde a intereses', function () { pm.expect(json.message).to.eql('Recursos sugeridos basados en tus intereses'); });",
+                                    "const expectedAreas = pm.collectionVariables.get('learningResourceInterestsParam').split(',').filter(Boolean).map(function (value) { return Number(value); });",
+                                    "pm.test('Recursos devueltos pertenecen a alguna de las areas solicitadas', function () { const isValid = resources.every(function (res) { return !res || res.areaInteresId === undefined || res.areaInteresId === null || expectedAreas.includes(res.areaInteresId); }); pm.expect(isValid).to.be.true; });",
+                                    "const externals = resources.filter(function (res) { return res && res.esEnlaceExterno; });",
+                                    "if (externals.length > 0) {",
+                                    "  pm.test('Recursos externos mantienen protocolo valido', function () { externals.forEach(function (res) { pm.expect(res.urlRecurso).to.match(/^https?:\\/\\//i); }); });",
+                                    "}",
+                                    "pm.collectionVariables.set('learningResourceRecommendedPayload', JSON.stringify(json));"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/learning-resources/by-interests?areaIds={{learningResourceInterestsParam}}&size=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "learning-resources",
+                                "by-interests"
+                            ],
+                            "query": [
+                                {
+                                    "key": "areaIds",
+                                    "value": "{{learningResourceInterestsParam}}"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M4-02 \u00b7 Favoritos de materiales",
+            "description": "Escenarios para guardar, listar, persistir y eliminar materiales favoritos.",
+            "item": [
+                {
+                    "name": "M4-02 \u00b7 Guardar material como favorito",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const resourceId = pm.collectionVariables.get('learningResourceSampleResourceId');",
+                                    "if (!resourceId) { throw new Error('No hay un recurso base disponible para guardar.'); }"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al guardar recurso favorito', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Servicio confirma guardado en favoritos', function () { pm.expect(json.message).to.eql('Recurso guardado en favoritos'); });",
+                                    "pm.collectionVariables.set('learningResourceFavoriteId', pm.collectionVariables.get('learningResourceSampleResourceId'));",
+                                    "pm.collectionVariables.set('learningResourceFavoriteCountBefore', '0');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"resourceId\": {{learningResourceSampleResourceId}}\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/learning-resources/save",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "learning-resources",
+                                "save"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-02 \u00b7 Listar materiales favoritos",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al obtener favoritos', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.collectionVariables.set('learningResourceSavedListPayload', JSON.stringify(json));",
+                                    "pm.test('Respuesta de favoritos incluye arreglo', function () { pm.expect(json.resources).to.be.an('array'); });",
+                                    "const favorites = json.resources || [];",
+                                    "pm.collectionVariables.set('learningResourceFavoriteCountBefore', String(favorites.length));",
+                                    "const favoriteId = pm.collectionVariables.get('learningResourceFavoriteId');",
+                                    "if (favoriteId) {",
+                                    "  const exists = favorites.some(function (res) { return String(res.id) === favoriteId; });",
+                                    "  pm.test('Recurso guardado aparece en la lista de favoritos', function () { pm.expect(exists).to.be.true; });",
+                                    "  if (exists) {",
+                                    "    const saved = favorites.find(function (res) { return String(res.id) === favoriteId; });",
+                                    "    pm.test('Recurso favorito conserva bandera isSaved', function () { pm.expect(saved.isSaved).to.be.true; });",
+                                    "  }",
+                                    "}",
+                                    "pm.test('Mensaje de favoritos corresponde a usuario', function () { pm.expect(json.message).to.eql('Tus recursos guardados'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/learning-resources/saved?page=0&size=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "learning-resources",
+                                "saved"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-02 \u00b7 Reautenticacion para validar persistencia",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 en re-login QA M4', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.collectionVariables.set('accessToken', json.tokens.accessToken);",
+                                    "pm.collectionVariables.set('refreshToken', json.tokens.refreshToken || '');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{m4UserEmail}}\",\n  \"password\": \"{{m4UserPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-02 \u00b7 Validar favoritos tras re-login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al obtener favoritos luego de re-login', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.collectionVariables.set('learningResourceSavedAfterRelogin', JSON.stringify(json));",
+                                    "const favorites = json.resources || [];",
+                                    "pm.collectionVariables.set('learningResourceFavoriteCountAfter', String(favorites.length));",
+                                    "const favoriteId = pm.collectionVariables.get('learningResourceFavoriteId');",
+                                    "if (favoriteId) {",
+                                    "  const exists = favorites.some(function (res) { return String(res.id) === favoriteId; });",
+                                    "  pm.test('Recurso favorito persiste tras nueva sesion', function () { pm.expect(exists).to.be.true; });",
+                                    "}",
+                                    "pm.test('Conteo de favoritos se mantiene tras re-login', function () { pm.expect(pm.collectionVariables.get('learningResourceFavoriteCountAfter')).to.eql(pm.collectionVariables.get('learningResourceFavoriteCountBefore')); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/learning-resources/saved?page=0&size=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "learning-resources",
+                                "saved"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-02 \u00b7 Quitar material de favoritos",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const favoriteId = pm.collectionVariables.get('learningResourceFavoriteId');",
+                                    "if (!favoriteId) { throw new Error('No existe recurso favorito para eliminar.'); }"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al eliminar recurso favorito', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Servicio confirma eliminacion de favorito', function () { pm.expect(json.message).to.eql('Recurso eliminado de favoritos'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/learning-resources/unsave/{{learningResourceFavoriteId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "learning-resources",
+                                "unsave",
+                                "{{learningResourceFavoriteId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-02 \u00b7 Verificar lista tras eliminar favorito",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al listar favoritos tras eliminar', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const favorites = json.resources || [];",
+                                    "const favoriteId = pm.collectionVariables.get('learningResourceFavoriteId');",
+                                    "if (favoriteId) {",
+                                    "  const exists = favorites.some(function (res) { return String(res.id) === favoriteId; });",
+                                    "  pm.test('Recurso eliminado ya no aparece en favoritos', function () { pm.expect(exists).to.be.false; });",
+                                    "}",
+                                    "pm.test('Listado de favoritos refleja cambios', function () { pm.expect(favorites.length).to.be.below(Number(pm.collectionVariables.get('learningResourceFavoriteCountBefore')) + 1); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/learning-resources/saved?page=0&size=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "learning-resources",
+                                "saved"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+        ,
+        {
+            "name": "M4-03 \u00b7 Descargas y enlaces personalizados",
+            "description": "Verifica descarga de materiales PDF y la gestion de enlaces personalizados en la ruta de aprendizaje.",
+            "item": [
+                {
+                    "name": "M4-03 \u00b7 Seleccionar recurso descargable",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const careerId = pm.collectionVariables.get('learningResourceSampleCareerId');",
+                                    "if (!careerId) { throw new Error('Se requiere una carrera para localizar recursos descargables.'); }"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al buscar recurso descargable', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Respuesta incluye arreglo de recursos', function () { pm.expect(json.resources).to.be.an('array'); });",
+                                    "const resources = json.resources || [];",
+                                    "const downloadable = resources.find(function (res) {",
+                                    "  if (!res) { return false; }",
+                                    "  if (res.esDescargable === true) { return true; }",
+                                    "  if (res.tipoRecurso) { return String(res.tipoRecurso).toUpperCase() === 'PDF'; }",
+                                    "  return false;",
+                                    "});",
+                                    "pm.test('Existe al menos un recurso PDF descargable', function () { pm.expect(downloadable, 'Recurso PDF disponible').to.exist; });",
+                                    "if (downloadable) {",
+                                    "  pm.collectionVariables.set('learningResourceDownloadableResourceId', String(downloadable.id || ''));",
+                                    "  const filename = downloadable.archivoPdf || 'recurso.pdf';",
+                                    "  pm.collectionVariables.set('learningResourceDownloadFilename', filename);",
+                                    "} else {",
+                                    "  pm.collectionVariables.set('learningResourceDownloadableResourceId', '');",
+                                    "  pm.collectionVariables.set('learningResourceDownloadFilename', '');",
+                                    "}",
+                                    "pm.collectionVariables.set('learningResourceRecommendedPayload', JSON.stringify(json));"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/learning-resources/by-career/{{learningResourceSampleCareerId}}?size=30",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "learning-resources",
+                                "by-career",
+                                "{{learningResourceSampleCareerId}}"
+                            ],
+                            "query": [
+                                {
+                                    "key": "size",
+                                    "value": "30"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-03 \u00b7 Descargar material PDF",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const resourceId = pm.collectionVariables.get('learningResourceDownloadableResourceId');",
+                                    "if (!resourceId) { throw new Error('No se encontro un recurso descargable para probar la descarga.'); }"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al descargar PDF de recurso', function () { pm.response.to.have.status(200); });",
+                                    "const contentType = pm.response.headers.get('Content-Type') || '';",
+                                    "pm.test('Cabecera Content-Type indica PDF', function () { pm.expect(contentType.toLowerCase()).to.include('pdf'); });",
+                                    "const disposition = pm.response.headers.get('Content-Disposition') || '';",
+                                    "pm.test('Respuesta sugiere archivo adjunto .pdf', function () { pm.expect(disposition.toLowerCase()).to.include('attachment'); pm.expect(disposition.toLowerCase()).to.include('.pdf'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/learning-resources/{{learningResourceDownloadableResourceId}}/download",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "learning-resources",
+                                "{{learningResourceDownloadableResourceId}}",
+                                "download"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-03 \u00b7 Listar enlaces personalizados antes de guardar",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al listar enlaces personalizados', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const links = json.links || json.items || json.data || [];",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkListPayload', JSON.stringify(json));",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkCountBefore', String(links.length));",
+                                    "pm.test('Listado de enlaces personalizados se entrega como arreglo', function () { pm.expect(Array.isArray(links)).to.be.true; });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users/me/materials/custom-links",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "me",
+                                "materials",
+                                "custom-links"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-03 \u00b7 Guardar enlace externo personalizado",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const uuid = pm.variables.replaceIn('{{$randomUUID}}');",
+                                    "const title = `Recurso QA ${uuid.substring(0, 8)}`;",
+                                    "const url = `https://postman-echo.com/get?ref=${uuid}`;",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkTitle', title);",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkUrl', url);"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 201 al guardar enlace personalizado', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Respuesta entrega identificador del enlace', function () { pm.expect(json.id || json.linkId).to.exist; });",
+                                    "const returnedId = json.id || json.linkId;",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkId', String(returnedId));",
+                                    "pm.test('Titulo guardado coincide', function () { pm.expect(json.title || json.titulo || json.nombre).to.include(pm.collectionVariables.get('learningResourceCustomLinkTitle')); });",
+                                    "pm.test('URL normalizada respeta esquema http/https', function () { const savedUrl = json.url || json.link || json.enlace; pm.expect(savedUrl).to.match(/^https?:\\/\\//i); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"{{learningResourceCustomLinkTitle}}\",\n  \"url\": \"{{learningResourceCustomLinkUrl}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users/me/materials/custom-links",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "me",
+                                "materials",
+                                "custom-links"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-03 \u00b7 Verificar enlaces personalizados tras guardar",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al consultar enlaces despues de guardar', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const links = json.links || json.items || json.data || [];",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkCountAfter', String(links.length));",
+                                    "const savedId = pm.collectionVariables.get('learningResourceCustomLinkId');",
+                                    "const exists = links.some(function (link) { return String(link.id || link.linkId) === savedId; });",
+                                    "pm.test('Nuevo enlace aparece en el listado personal', function () { pm.expect(exists).to.be.true; });",
+                                    "pm.test('Cantidad de enlaces aumenta en al menos una unidad', function () { const before = Number(pm.collectionVariables.get('learningResourceCustomLinkCountBefore')); pm.expect(links.length).to.be.at.least(before + 1); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users/me/materials/custom-links",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "me",
+                                "materials",
+                                "custom-links"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-03 \u00b7 Rechazar URL invalida al guardar",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Se rechaza guardar enlace con URL invalida', function () { pm.expect(pm.response.code).to.be.oneOf([400, 422]); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje de error indica enlace no valido', function () { pm.expect((json.message || json.error || '').toLowerCase()).to.include('enlace no válido'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"Recurso invalido QA\",\n  \"url\": \"nota-url\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users/me/materials/custom-links",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "me",
+                                "materials",
+                                "custom-links"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M4-04 \u00b7 Gestionar materiales guardados",
+            "description": "Pruebas para eliminar materiales personalizados y validar refresco del listado.",
+            "item": [
+                {
+                    "name": "M4-04 \u00b7 Eliminar material personalizado guardado",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const linkId = pm.collectionVariables.get('learningResourceCustomLinkId');",
+                                    "if (!linkId) { throw new Error('Se requiere un enlace personalizado guardado para eliminar.'); }"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200/204 al eliminar material personalizado', function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });",
+                                    "let json = {};",
+                                    "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                                    "if (Object.keys(json).length > 0) {",
+                                    "  pm.test('Mensaje de eliminacion confirmatorio', function () { pm.expect((json.message || '').toLowerCase()).to.include('eliminar'); });",
+                                    "}",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkCountFinal', '');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users/me/materials/custom-links/{{learningResourceCustomLinkId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "me",
+                                "materials",
+                                "custom-links",
+                                "{{learningResourceCustomLinkId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M4-04 \u00b7 Confirmar lista tras eliminar material",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al refrescar lista de enlaces', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const links = json.links || json.items || json.data || [];",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkCountFinal', String(links.length));",
+                                    "const removedId = pm.collectionVariables.get('learningResourceCustomLinkId');",
+                                    "const exists = links.some(function (link) { return String(link.id || link.linkId) === removedId; });",
+                                    "pm.test('Material eliminado ya no se encuentra en la lista', function () { pm.expect(exists).to.be.false; });",
+                                    "const countAfter = Number(pm.collectionVariables.get('learningResourceCustomLinkCountAfter'));",
+                                    "pm.test('Conteo disminuye tras la eliminacion', function () { pm.expect(links.length).to.be.at.most(Math.max(countAfter - 1, 0)); });",
+                                    "pm.collectionVariables.set('learningResourceCustomLinkId', '');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users/me/materials/custom-links",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "me",
+                                "materials",
+                                "custom-links"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "event": [],
+    "variable": []
+}

@@ -1,0 +1,955 @@
+{
+    "info": {
+        "_postman_id": "84a1dfe7-7f53-4a62-bb75-ff6df7845adc",
+        "name": "Vocatio API - Modulo 3",
+        "description": "Coleccion de pruebas funcionales para el Modulo 3 (Exploracion de carreras). Valida listado, paginacion y filtros.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "M3-00 · Preparacion",
+            "description": "Escenarios de soporte para crear y autenticar un usuario QA previo al modulo 3.",
+            "item": [
+                {
+                    "name": "M3-00 · Registro usuario QA",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const uuid = pm.variables.replaceIn('{{$randomUUID}}');",
+                                    "const email = `qa.m3.${uuid}@vocatio.test`.toLowerCase();",
+                                    "pm.collectionVariables.set('m3UserEmail', email);",
+                                    "pm.collectionVariables.set('m3UserPassword', pm.collectionVariables.get('testPassword') || 'Password1');",
+                                    "pm.collectionVariables.set('accessToken', '');",
+                                    "pm.collectionVariables.set('refreshToken', '');",
+                                    "pm.collectionVariables.set('careerBaselineSignature', '');",
+                                    "pm.collectionVariables.set('careerBaselineTotalElements', '');",
+                                    "pm.collectionVariables.set('careerFilterArea', '');",
+                                    "pm.collectionVariables.set('careerFilterDurationToken', '');",
+                                    "pm.collectionVariables.set('careerFilterType', '');"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 201 en registro QA M3', function () { pm.response.to.have.status(201); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Registro retorna email esperado', function () { pm.expect(json.user.email).to.eql(pm.collectionVariables.get('m3UserEmail')); });",
+                                    "pm.test('Registro entrega token de acceso', function () { pm.expect(json.tokens.accessToken).to.be.a('string').and.not.empty; });",
+                                    "pm.collectionVariables.set('accessToken', json.tokens.accessToken);",
+                                    "pm.collectionVariables.set('refreshToken', json.tokens.refreshToken || '');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{m3UserEmail}}\",\n  \"password\": \"{{m3UserPassword}}\",\n  \"rememberMe\": false\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M3-00 · Login usuario QA",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 en login QA M3', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Login retorna token de acceso usable', function () { pm.expect(json.tokens.accessToken).to.be.a('string').and.not.empty; });",
+                                    "pm.collectionVariables.set('accessToken', json.tokens.accessToken);",
+                                    "pm.collectionVariables.set('refreshToken', json.tokens.refreshToken || '');",
+                                    "pm.collectionVariables.set('accessTokenExpiresAt', json.tokens.accessTokenExpiresAt || '');",
+                                    "pm.collectionVariables.set('refreshTokenExpiresAt', json.tokens.refreshTokenExpiresAt || '');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{m3UserEmail}}\",\n  \"password\": \"{{m3UserPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M3-01 · Explorar carreras",
+            "description": "Validacion del listado general y mensajes de vacio.",
+            "item": [
+                {
+                    "name": "M3-01 · Listado inicial con datos basicos",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 en listado inicial', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Respuesta incluye arreglo de carreras', function () { pm.expect(json.careers).to.be.an('array'); });",
+                                    "pm.test('Listado no supera 20 elementos por pagina', function () { pm.expect(json.careers.length).to.be.at.most(20); pm.expect(json.size).to.be.at.most(20); });",
+                                    "pm.test('Incluye metadatos de paginacion', function () { pm.expect(json).to.have.property('page'); pm.expect(json).to.have.property('totalElements'); pm.expect(json).to.have.property('totalPages'); });",
+                                    "const careers = json.careers || [];",
+                                    "pm.collectionVariables.set('careerBaselineSignature', careers.map(function (c) { return c && c.id; }).filter(function (id) { return id !== undefined && id !== null; }).join('|'));",
+                                    "pm.collectionVariables.set('careerBaselineTotalElements', String(json.totalElements));",
+                                    "pm.collectionVariables.set('careerBaselinePageSize', String(json.size));",
+                                    "if (careers.length > 0) {",
+                                    "  const firstValid = careers.find(function (career) { return career && career.nombre && career.descripcion && career.duracion && career.modalidad && career.areaInteres && career.tipoFormacion; });",
+                                    "  pm.test('Se encuentra al menos una carrera con datos completos', function () { pm.expect(firstValid, 'Carrera con datos completos').to.be.an('object'); });",
+                                    "  if (firstValid) {",
+                                    "    pm.collectionVariables.set('careerSampleId', firstValid.id || '');",
+                                    "    pm.collectionVariables.set('careerFilterArea', firstValid.areaInteres);",
+                                    "    const durationTokenMatch = (firstValid.duracion || '').match(/\\d+/);",
+                                    "    const durationToken = durationTokenMatch ? durationTokenMatch[0] : (firstValid.duracion || '');",
+                                    "    pm.collectionVariables.set('careerFilterDurationToken', durationToken);",
+                                    "    pm.collectionVariables.set('careerFilterDurationLabel', firstValid.duracion || '');",
+                                    "    pm.collectionVariables.set('careerFilterType', firstValid.tipoFormacion);",
+                                    "  }",
+                                    "}",
+                                    "pm.collectionVariables.set('careerListLastResponse', JSON.stringify(json));",
+                                    "pm.test('Mensaje vacio solo cuando no hay carreras', function () { if (json.careers.length > 0) { pm.expect(json.message, 'Mensaje cuando hay datos').to.satisfy(function (value) { return value === null || value === undefined; }); } else { pm.expect(json.message).to.eql('No hay carreras disponibles en este momento.'); } });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/careers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "careers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M3-01 · Paginacion limitada a 20",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 en paginacion', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Servicio restringe tamano solicitado a maximo 20', function () { pm.expect(json.size).to.be.at.most(20); });",
+                                    "pm.test('La pagina solicitada respeta limite de elementos', function () { pm.expect(json.careers.length).to.be.at.most(20); });",
+                                    "pm.test('Orden alfabetico por nombre', function () { const names = (json.careers || []).map(function (c) { return c && c.nombre; }).filter(Boolean); const sorted = [].concat(names).sort(function (a, b) { return a.localeCompare(b); }); pm.expect(names).to.eql(sorted); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/careers?page=0&size=50",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "careers"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "50"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M3-01 · Mensaje sin resultados",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al solicitar area inexistente', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Sin carreras cuando el area no existe', function () { pm.expect(json.careers).to.be.an('array').that.is.empty; });",
+                                    "pm.test('Mensaje indica falta de carreras', function () { pm.expect(json.message).to.eql('No hay carreras disponibles en este momento.'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/careers?area=area-inexistente-qa",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "careers"
+                            ],
+                            "query": [
+                                {
+                                    "key": "area",
+                                    "value": "area-inexistente-qa"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M3-02 · Filtros de carreras",
+            "description": "Verifica filtros por area, combinacion y reset.",
+            "item": [
+                {
+                    "name": "M3-02 · Filtrar por area de interes",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const area = pm.collectionVariables.get('careerFilterArea');",
+                                    "if (!area) { throw new Error('No hay area de interes almacenada desde el listado inicial'); }"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al filtrar por area', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const expectedArea = (pm.collectionVariables.get('careerFilterArea') || '').toLowerCase();",
+                                    "pm.test('Listado devuelve carreras del area seleccionada', function () {\n    const careers = json.careers || [];\n    pm.expect(careers.length).to.be.greaterThan(0);\n    careers.forEach(function (career) {\n        pm.expect((career.areaInteres || '').toLowerCase()).to.eql(expectedArea);\n    });\n});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/careers?area={{careerFilterArea}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "careers"
+                            ],
+                            "query": [
+                                {
+                                    "key": "area",
+                                    "value": "{{careerFilterArea}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M3-02 · Filtrado combinado por duracion y tipo",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const duration = pm.collectionVariables.get('careerFilterDurationToken');",
+                                    "const type = pm.collectionVariables.get('careerFilterType');",
+                                    "if (!duration || !type) { throw new Error('Faltan datos para filtros combinados (duracion/tipo)'); }"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 en filtrado combinado', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const expectedDurationToken = (pm.collectionVariables.get('careerFilterDurationToken') || '').toLowerCase();",
+                                    "const expectedType = (pm.collectionVariables.get('careerFilterType') || '').toLowerCase();",
+                                    "pm.test('Resultados cumplen duracion y tipo', function () {\n    const careers = json.careers || [];\n    pm.expect(careers.length).to.be.greaterThan(0);\n    careers.forEach(function (career) {\n        const duration = (career.duracion || '').toLowerCase();\n        const type = (career.tipoFormacion || '').toLowerCase();\n        pm.expect(duration, 'Duracion contiene token esperado').to.include(expectedDurationToken);\n        pm.expect(type, 'Tipo de formacion coincide').to.eql(expectedType);\n    });\n});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/careers?duration={{careerFilterDurationToken}}&type={{careerFilterType}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "careers"
+                            ],
+                            "query": [
+                                {
+                                    "key": "duration",
+                                    "value": "{{careerFilterDurationToken}}"
+                                },
+                                {
+                                    "key": "type",
+                                    "value": "{{careerFilterType}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M3-02 · Reset de filtros",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 tras limpiar filtros', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const baselineSignature = pm.collectionVariables.get('careerBaselineSignature') || '';",
+                                    "const baselineTotal = Number(pm.collectionVariables.get('careerBaselineTotalElements') || '0');",
+                                    "const currentSignature = (json.careers || []).map(function (c) { return c.id; }).join('|');",
+                                    "pm.test('Listado vuelve al estado inicial', function () { pm.expect(currentSignature).to.eql(baselineSignature); });",
+                                    "pm.test('Se conservan totales originales', function () { pm.expect(json.totalElements).to.eql(baselineTotal); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/careers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "careers"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M3-03 · Detalle de carrera",
+            "description": "Comprueba ficha detallada, navegacion y errores de ID.",
+            "item": [
+                {
+                    "name": "M3-03 · Obtener detalle completo",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const careerId = pm.collectionVariables.get('careerSampleId');",
+                                    "if (!careerId) { throw new Error('No se ha definido careerSampleId desde el listado inicial'); }"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 en detalle de carrera', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const expectedId = pm.collectionVariables.get('careerSampleId');",
+                                    "pm.test('Detalle corresponde al ID solicitado', function () { pm.expect(json.id).to.eql(expectedId); });",
+                                    "const baseFields = ['nombre', 'duracion', 'modalidad'];",
+                                    "baseFields.forEach(function (field) { pm.test('Incluye campo ' + field, function () { pm.expect(json).to.have.property(field); }); });",
+                                    "const hasPlan = Object.prototype.hasOwnProperty.call(json, 'planEstudios') || Object.prototype.hasOwnProperty.call(json, 'planEstudio');",
+                                    "pm.test('Incluye plan de estudios basico', function () { pm.expect(hasPlan).to.be.true; });",
+                                    "const hasPerfil = Object.prototype.hasOwnProperty.call(json, 'perfilEgreso') || Object.prototype.hasOwnProperty.call(json, 'perfilDelEgresado');",
+                                    "pm.test('Incluye perfil de egreso', function () { pm.expect(hasPerfil).to.be.true; });",
+                                    "const instituciones = json.instituciones || json.institutions || json.institucionesQueLaOfrecen || [];",
+                                    "pm.test('Incluye instituciones que la ofrecen', function () { pm.expect(instituciones).to.be.an('array'); });",
+                                    "pm.collectionVariables.set('careerDetailInstitutionCount', String(instituciones.length));",
+                                    "pm.collectionVariables.set('careerDetailResponse', JSON.stringify(json));",
+                                    "pm.collectionVariables.set('favoriteCareerId', expectedId);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/careers/{{careerSampleId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "careers",
+                                "{{careerSampleId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M3-03 · Regreso al listado conserva estado",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al volver al listado', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const baselineSignature = pm.collectionVariables.get('careerBaselineSignature') || '';",
+                                    "const baselineTotal = Number(pm.collectionVariables.get('careerBaselineTotalElements') || '0');",
+                                    "const baselineSize = Number(pm.collectionVariables.get('careerBaselinePageSize') || '20');",
+                                    "const currentSignature = (json.careers || []).map(function (c) { return c && c.id; }).filter(Boolean).join('|');",
+                                    "pm.test('Listado mantiene misma firma de resultados', function () { pm.expect(currentSignature).to.eql(baselineSignature); });",
+                                    "pm.test('Totales coinciden con el estado inicial', function () { pm.expect(json.totalElements).to.eql(baselineTotal); });",
+                                    "pm.test('Se respeta tamano de pagina original', function () { pm.expect(json.size).to.eql(baselineSize); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/careers?page=0&size={{careerBaselinePageSize}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "careers"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "{{careerBaselinePageSize}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M3-03 · Detalle con ID invalido",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Retorna 404 cuando la carrera no existe', function () { pm.response.to.have.status(404); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje claro de carrera no encontrada', function () { pm.expect(json.message || json.error).to.eql('Carrera no encontrada'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/careers/{{careerInvalidId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "careers",
+                                "{{careerInvalidId}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M3-04 · Favoritos de carreras",
+            "description": "Valida agregar, persistir y eliminar favoritos.",
+            "item": [
+                {
+                    "name": "M3-04 · Agregar carrera a favoritos",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const careerId = pm.collectionVariables.get('careerSampleId');",
+                                    "if (!careerId) { throw new Error('No se puede marcar favorito sin careerSampleId'); }"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Exito al agregar favorito', function () { pm.expect([200, 201, 204]).to.include(pm.response.code); });",
+                                    "let json = {};",
+                                    "try { json = pm.response.json(); } catch (error) { json = {}; }",
+                                    "const targetId = pm.collectionVariables.get('careerSampleId');",
+                                    "let favorites = [];",
+                                    "if (json && typeof json === 'object' && Object.keys(json).length > 0) {",
+                                    "  favorites = Array.isArray(json) ? json : json.favorites || json.careers || [];",
+                                    "}",
+                                    "if (Array.isArray(favorites) && favorites.length > 0) {",
+                                    "  const found = favorites.some(function (fav) { return fav && (fav.id === targetId || fav.careerId === targetId); });",
+                                    "  pm.test('La carrera aparece en la respuesta de favoritos', function () { pm.expect(found).to.be.true; });",
+                                    "}",
+                                    "pm.collectionVariables.set('favoriteCareerId', targetId);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"careerId\": \"{{careerSampleId}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users/me/favorites",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "me",
+                                "favorites"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M3-04 · Listado de favoritos incluye carrera",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al consultar favoritos', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const favorites = Array.isArray(json) ? json : json.favorites || json.careers || [];",
+                                    "pm.test('Respuesta de favoritos es un arreglo', function () { pm.expect(favorites).to.be.an('array'); });",
+                                    "const targetId = pm.collectionVariables.get('favoriteCareerId') || pm.collectionVariables.get('careerSampleId');",
+                                    "const found = favorites.some(function (fav) { return fav && (fav.id === targetId || fav.careerId === targetId); });",
+                                    "pm.test('Incluye la carrera marcada como favorita', function () { pm.expect(found).to.be.true; });",
+                                    "pm.collectionVariables.set('favoritesLastSignature', favorites.map(function (fav) { return fav && (fav.id || fav.careerId); }).filter(Boolean).sort().join('|'));"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users/me/favorites",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "me",
+                                "favorites"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M3-04 · Reingreso mantiene favoritos",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Login exitoso para revalidar sesion', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Nuevo token de acceso disponible', function () { pm.expect(json.tokens.accessToken).to.be.a('string').and.not.empty; });",
+                                    "pm.collectionVariables.set('accessToken', json.tokens.accessToken);",
+                                    "pm.collectionVariables.set('refreshToken', json.tokens.refreshToken || '');",
+                                    "pm.collectionVariables.set('accessTokenExpiresAt', json.tokens.accessTokenExpiresAt || '');",
+                                    "pm.collectionVariables.set('refreshTokenExpiresAt', json.tokens.refreshTokenExpiresAt || '');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{m3UserEmail}}\",\n  \"password\": \"{{m3UserPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M3-04 · Favoritos tras reingreso",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al consultar favoritos luego de reingresar', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const favorites = Array.isArray(json) ? json : json.favorites || json.careers || [];",
+                                    "const targetId = pm.collectionVariables.get('favoriteCareerId') || pm.collectionVariables.get('careerSampleId');",
+                                    "const found = favorites.some(function (fav) { return fav && (fav.id === targetId || fav.careerId === targetId); });",
+                                    "pm.test('La carrera favorita persiste tras nueva sesion', function () { pm.expect(found).to.be.true; });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users/me/favorites",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "me",
+                                "favorites"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M3-04 · Quitar carrera de favoritos",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Exito al quitar favorito', function () { pm.expect([200, 204]).to.include(pm.response.code); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users/me/favorites/{{favoriteCareerId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "me",
+                                "favorites",
+                                "{{favoriteCareerId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M3-04 · Listado de favoritos vacio",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al consultar favoritos despues de eliminar', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const favorites = Array.isArray(json) ? json : json.favorites || json.careers || [];",
+                                    "pm.test('La carrera ya no aparece en favoritos', function () { const targetId = pm.collectionVariables.get('favoriteCareerId'); const found = favorites.some(function (fav) { return fav && (fav.id === targetId || fav.careerId === targetId); }); pm.expect(found).to.be.false; });",
+                                    "if (favorites.length === 0) { pm.test('Mensaje opcional de vacio', function () { pm.expect(json.message === undefined || json.message === 'No hay carreras favoritas registradas.').to.be.true; }); }"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users/me/favorites",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users",
+                                "me",
+                                "favorites"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "testPassword",
+            "value": "Password1",
+            "type": "string"
+        },
+        {
+            "key": "m3UserEmail",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "m3UserPassword",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "accessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "refreshToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "accessTokenExpiresAt",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "refreshTokenExpiresAt",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "careerSampleId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "careerFilterArea",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "careerFilterDurationToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "careerFilterDurationLabel",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "careerFilterType",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "careerBaselineSignature",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "careerBaselineTotalElements",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "careerBaselinePageSize",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "careerListLastResponse",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "careerDetailInstitutionCount",
+            "value": "0",
+            "type": "string"
+        },
+        {
+            "key": "careerDetailResponse",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "favoriteCareerId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "favoritesLastSignature",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "careerInvalidId",
+            "value": "00000000-0000-0000-0000-000000000000",
+            "type": "string"
+        }
+    ]
+}

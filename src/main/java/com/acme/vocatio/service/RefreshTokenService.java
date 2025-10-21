@@ -39,6 +39,11 @@ public class RefreshTokenService {
         refreshTokenRepository.revokeTokensForUser(user);
     }
 
+    @Transactional
+    public void deleteAllForUser(User user) {
+        refreshTokenRepository.deleteByUser(user);
+    }
+
     private String generateToken() {
         byte[] randomBytes = new byte[TOKEN_BYTE_LENGTH];
         RANDOM.nextBytes(randomBytes);

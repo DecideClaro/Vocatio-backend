@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+  server:
+    image: vocatio:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+
+    environment:
+      PORT: 8080
+
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-d3i4pmqdbo4c73fe4umg-a.oregon-postgres.render.com:5432/vocatiodb?sslmode=require
+      SPRING_DATASOURCE_USERNAME: postgress
+      SPRING_DATASOURCE_PASSWORD: zVi1YGYdWf6Vq08yqqJdCNoYrGiIetQa
+
+      JWT_SECRET: chLhMF9w3mwDutysbQxsX8x4CGwZef4mayTGSmbAG2BUsXbYFKvXrVfnPCa62PJxp9TuHxx4PQAS2yWizardDy53j8Uj2wb2AQ3nK8VLg7tUx9HCzHATEp
+
+    ports:
+      - "8080:8080"

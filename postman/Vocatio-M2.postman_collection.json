@@ -1,0 +1,1194 @@
+{
+    "info": {
+        "_postman_id": "e0cda7f3-9c9a-4d4d-b778-7a21ebf597ed",
+        "name": "Vocatio API - Modulo 2",
+        "description": "Coleccion de pruebas funcionales para el Modulo 2 (Evaluaciones vocacionales). Valida flujos de intento, guardado de progreso, envio y resultados.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "M2-00 · Preparacion",
+            "description": "Escenarios de soporte para crear un usuario de prueba y autenticarse antes de las pruebas del modulo.",
+            "item": [
+                {
+                    "name": "M2-00 · Registro usuario QA",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const uuid = pm.variables.replaceIn('{{$randomUUID}}');",
+                                    "const email = `qa.m2.${uuid}@vocatio.test`.toLowerCase();",
+                                    "pm.collectionVariables.set('m2UserEmail', email);",
+                                    "pm.collectionVariables.set('m2UserPassword', pm.collectionVariables.get('testPassword') || 'Password1');",
+                                    "pm.collectionVariables.set('accessToken', '');",
+                                    "pm.collectionVariables.set('refreshToken', '');",
+                                    "pm.collectionVariables.set('assessmentId', '');",
+                                    "pm.collectionVariables.set('assessmentValidationPayload', '');",
+                                    "pm.collectionVariables.set('assessmentPartialPayload', '');",
+                                    "pm.collectionVariables.set('assessmentCompletionPayload', '');",
+                                    "pm.collectionVariables.set('assessmentRequiredQuestionId', '');",
+                                    "pm.collectionVariables.set('assessmentFirstPageMetadata', '');",
+                                    "pm.collectionVariables.set('assessmentResultId', '');",
+                                    "pm.collectionVariables.set('assessmentCompletedId', '');",
+                                    "pm.collectionVariables.set('assessmentSecondId', '');",
+                                    "pm.collectionVariables.set('assessmentSecondResultId', '');",
+                                    "pm.collectionVariables.set('assessmentHistoryCount', '');",
+                                    "pm.collectionVariables.set('assessmentHistoryCountAfterSecond', '');",
+                                    "pm.collectionVariables.set('assessmentSecondHistoryEntry', '');",
+                                    "pm.collectionVariables.set('assessmentDeletedId', '');",
+                                    "pm.collectionVariables.set('otherUserEmail', '');",
+                                    "pm.collectionVariables.set('otherUserPassword', pm.collectionVariables.get('testPassword') || 'Password1');",
+                                    "pm.collectionVariables.set('otherAccessToken', '');"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 201 en registro QA M2', function () { pm.response.to.have.status(201); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Respuesta de registro incluye email', function () { pm.expect(json.user.email).to.eql(pm.collectionVariables.get('m2UserEmail')); });",
+                                    "pm.test('Registro retorna tokens de sesion', function () { pm.expect(json.tokens.accessToken).to.be.a('string').and.not.empty; });",
+                                    "pm.collectionVariables.set('accessToken', json.tokens.accessToken);",
+                                    "pm.collectionVariables.set('refreshToken', json.tokens.refreshToken);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{m2UserEmail}}\",\n  \"password\": \"{{m2UserPassword}}\",\n  \"rememberMe\": false\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-00 · Login usuario QA",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 en login QA M2', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Login retorna token de acceso', function () { pm.expect(json.tokens.accessToken).to.be.a('string').and.not.empty; });",
+                                    "pm.collectionVariables.set('accessToken', json.tokens.accessToken);",
+                                    "pm.collectionVariables.set('refreshToken', json.tokens.refreshToken);",
+                                    "pm.collectionVariables.set('accessTokenExpiresAt', json.tokens.accessTokenExpiresAt || '');",
+                                    "pm.collectionVariables.set('refreshTokenExpiresAt', json.tokens.refreshTokenExpiresAt || '');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{m2UserEmail}}\",\n  \"password\": \"{{m2UserPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M2-01 · Responder test vocacional",
+            "description": "Escenarios principales de carga, validacion y guardado de progreso del test.",
+            "item": [
+                {
+                    "name": "M2-01 · Crear intento y obtener primera pagina",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 201 al crear intento de evaluacion', function () { pm.response.to.have.status(201); });",
+                                    "const json = pm.response.json();",
+                                    "const attempt = json.assessment || json;",
+                                    "pm.test('Intento incluye identificador unico', function () { pm.expect(attempt.id || attempt.assessmentId).to.be.ok; });",
+                                    "const assessmentId = attempt.id || attempt.assessmentId;",
+                                    "pm.collectionVariables.set('assessmentId', assessmentId);",
+                                    "const pages = attempt.pages || attempt.sections || attempt.questionPages || [];",
+                                    "pm.test('Evaluacion devuelve paginas de preguntas', function () { pm.expect(Array.isArray(pages) && pages.length).to.be.ok; });",
+                                    "const firstPage = pages[0] || {};",
+                                    "pm.collectionVariables.set('assessmentFirstPageMetadata', JSON.stringify(firstPage.metadata || firstPage.meta || {}));",
+                                    "const questions = firstPage.questions || firstPage.items || attempt.questions || [];",
+                                    "pm.test('Primera pagina contiene preguntas', function () { pm.expect(Array.isArray(questions) && questions.length).to.be.true; });",
+                                    "const progress = attempt.progress || json.progress || {};",
+                                    "pm.test('Respuesta incluye progreso inicial', function () { pm.expect(progress.totalQuestions).to.be.a('number'); });",
+                                    "pm.test('Permite guardar y continuar luego', function () {\n    const flags = attempt.flags || attempt.features || {};\n    const canSave = attempt.allowSaveAndExit || flags.allowSaveAndExit || flags.canSaveForLater;\n    pm.expect(Boolean(canSave)).to.be.true;\n});",
+                                    "const normalizedQuestions = [];",
+                                    "questions.forEach(function (question) {\n    if (!question) { return; }\n    const qId = question.id || question.questionId || question.code;\n    const options = question.options || question.answers || question.choices || [];\n    if (qId && Array.isArray(options) && options.length) {\n        normalizedQuestions.push({\n            id: qId,\n            required: question.required !== false,\n            option: options[0],\n            altOption: options[1] || options[0]\n        });\n    }\n});",
+                                    "pm.test('Preguntas ofrecen opciones de respuesta', function () { pm.expect(normalizedQuestions.length).to.be.above(0); });",
+                                    "const requiredQuestion = normalizedQuestions.find(function (q) { return q.required; });",
+                                    "if (requiredQuestion) {\n    pm.collectionVariables.set('assessmentRequiredQuestionId', requiredQuestion.id);\n}",
+                                    "const preparedAnswers = normalizedQuestions.slice(0, 3).map(function (q, index) {\n    const option = index === 0 ? q.option : (q.altOption || q.option);\n    const optionId = option.id || option.value || option.code || option.optionId;\n    const payload = { questionId: q.id, optionId: optionId };\n    if (option.choiceId) { payload.optionId = option.choiceId; }\n    if (option.value !== undefined && optionId === undefined) { payload.value = option.value; }\n    if (option.text) { payload.label = option.text; }\n    return payload;\n});",
+                                    "const validationPayload = preparedAnswers.slice(1);",
+                                    "pm.collectionVariables.set('assessmentValidationPayload', JSON.stringify({ answers: validationPayload }));",
+                                    "const partialPayload = preparedAnswers.slice(0, 2);",
+                                    "pm.collectionVariables.set('assessmentPartialPayload', JSON.stringify({ answers: partialPayload }));",
+                                    "pm.collectionVariables.set('assessmentCompletionPayload', JSON.stringify({ answers: preparedAnswers }));"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-01 · Validacion de preguntas obligatorias",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 400 al omitir preguntas obligatorias', function () { pm.response.to.have.status(400); });",
+                                    "const json = pm.response.json();",
+                                    "const requiredId = pm.collectionVariables.get('assessmentRequiredQuestionId');",
+                                    "if (requiredId) {\n    pm.test('Mensaje de error referencia la pregunta obligatoria', function () {\n        const errors = json.errors || json.validationErrors || {};\n        const keys = Object.keys(errors);\n        pm.expect(keys).to.include(requiredId.toString());\n    });\n} else {\n    pm.test('Respuesta incluye errores de validacion', function () { pm.expect(json.message || json.errors).to.exist; });\n}",
+                                    "pm.test('No se avanza de pagina al faltar respuestas', function () {\n    const progress = json.progress || {};\n    if (progress.currentPage) {\n        pm.expect(progress.currentPage).to.eql(1);\n    }\n});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{{assessmentValidationPayload}}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-01 · Guardado parcial y progreso",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al guardar respuestas parciales', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Progreso refleja respuestas guardadas', function () {\n    const progress = json.progress || {};\n    if (progress.answeredQuestions !== undefined) {\n        pm.expect(progress.answeredQuestions).to.be.at.least(1);\n    } else {\n        pm.expect(json.status || '').to.match(/IN_PROGRESS|DRAFT/);\n    }\n});",
+                                    "const stored = json.answers || json.savedAnswers || [];",
+                                    "pm.test('Respuestas parciales disponibles para posterior consulta', function () { pm.expect(stored.length || 0).to.be.at.least(1); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{{assessmentPartialPayload}}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-01 · Recuperar intento en curso",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al consultar intento en curso', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const attempt = json.assessment || json;",
+                                    "pm.test('Estado del intento indica progreso en curso', function () { pm.expect(attempt.status || attempt.state).to.match(/IN_PROGRESS|DRAFT|PENDING/); });",
+                                    "pm.test('Respuestas previas se mantienen tras reingreso', function () {\n    const answers = attempt.answers || attempt.savedAnswers || [];\n    pm.expect(Array.isArray(answers) && answers.length).to.be.true;\n});",
+                                    "const metadata = attempt.metadata || attempt.meta || {};",
+                                    "pm.test('Se preserva informacion de accesibilidad basica', function () {\n    const aria = metadata.aria || metadata.accessibility || {};\n    if (Object.keys(aria).length) {\n        pm.expect(aria.inputs || aria.buttons).to.exist;\n    } else {\n        pm.expect(true).to.be.true;\n    }\n});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentId}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M2-02 · Resultados y sugerencias",
+            "description": "Escenarios de finalizacion de intento, calculo de resultados y persistencia.",
+            "item": [
+                {
+                    "name": "M2-02 · Completar respuestas pendientes",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al completar respuestas', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Estado del intento listo para envio', function () { pm.expect(json.status || '').to.match(/READY|COMPLETED|SUBMITTABLE/); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{{assessmentCompletionPayload}}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-02 · Enviar intento para scoring",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al finalizar intento', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Respuesta incluye identificador de resultado', function () { pm.expect(json.resultId || json.id).to.be.ok; });",
+                                    "const resultId = json.resultId || json.id || json.assessmentResultId;",
+                                    "pm.collectionVariables.set('assessmentResultId', resultId);",
+                                    "pm.test('Proceso de scoring iniciado', function () { pm.expect(json.status || json.state).to.match(/COMPLETED|SCORING|QUEUED/); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentId}}/submit",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentId}}",
+                                "submit"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-02 · Consultar resultados calculados",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al obtener resultados', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const result = json.result || json;",
+                                    "pm.test('Resultados incluyen ranking de areas', function () {\n    const areas = result.topAreas || result.areas || [];\n    pm.expect(Array.isArray(areas) && areas.length).to.be.true;\n    if (areas.length >= 3) {\n        pm.expect(areas[0].score).to.be.at.least(areas[areas.length - 1].score);\n    }\n});",
+                                    "pm.test('Se devuelven carreras sugeridas', function () {\n    const suggestions = result.suggestedCareers || result.careers || [];\n    pm.expect(Array.isArray(suggestions)).to.be.true;\n    pm.expect(suggestions.length).to.be.at.least(5);\n});",
+                                    "pm.test('Respuesta lista para graficar', function () {\n    const chart = result.chart || json.chart || {};\n    if (Object.keys(chart).length) {\n        pm.expect(chart.type).to.be.oneOf(['bar', 'radar', 'polar']);\n    } else {\n        pm.expect(true).to.be.true;\n    }\n});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentId}}/result",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentId}}",
+                                "result"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-02 · Resultado visible en historial",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 en historial de evaluaciones', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const list = json.items || json.assessments || json;",
+                                    "pm.test('Historial devuelve al menos un intento', function () { pm.expect(Array.isArray(list) && list.length).to.be.true; });",
+                                    "const assessmentId = pm.collectionVariables.get('assessmentId');",
+                                    "const found = (Array.isArray(list) ? list : []).find(function (item) {\n    const id = item.id || item.assessmentId;\n    return id && id.toString() === assessmentId.toString();\n});",
+                                    "pm.test('Intento finalizado aparece en historial', function () { pm.expect(found).to.exist; });",
+                                    "if (found) {\n    pm.test('Historial conserva puntajes y enlace a detalle', function () {\n        pm.expect(found.scores || found.topAreas).to.exist;\n        pm.expect(found.detailUrl || found.links || found.id).to.exist;\n    });\n}",
+                                    "pm.collectionVariables.set('assessmentHistoryCount', Array.isArray(list) ? list.length : 0);",
+                                    "if (found) {",
+                                    "    const foundId = found.id || found.assessmentId || assessmentId;",
+                                    "    pm.collectionVariables.set('assessmentCompletedId', foundId ? foundId.toString() : assessmentId);",
+                                    "}",
+                                    "pm.collectionVariables.set('assessmentHistoryEntry', JSON.stringify(found || {}));"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-02 · Reintento de submit es idempotente",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const status = pm.response.code;",
+                                    "pm.test('Reintento de submit no duplica resultados', function () { pm.expect([200, 202, 409]).to.include(status); });",
+                                    "const json = pm.response.json();",
+                                    "if (status === 200 || status === 202) {\n    pm.test('Resultado existente reutilizado', function () {\n        const resultId = json.resultId || json.id;\n        pm.expect(resultId).to.eql(pm.collectionVariables.get('assessmentResultId'));\n    });\n} else if (status === 409) {\n    pm.test('Mensaje de conflicto indica intento previamente finalizado', function () {\n        pm.expect(json.message || '').to.match(/ya ha sido finalizado|duplicado/i);\n    });\n}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentId}}/submit",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentId}}",
+                                "submit"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M2-03 · Historial y reportes",
+            "description": "Escenarios de historial de evaluaciones, comparativas y reportes en PDF.",
+            "item": [
+                {
+                    "name": "M2-03 · Crear nuevo intento para comparar",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 201 al crear nuevo intento comparativo', function () { pm.response.to.have.status(201); });",
+                                    "const json = pm.response.json();",
+                                    "const attempt = json.assessment || json;",
+                                    "const newAssessmentId = attempt.id || attempt.assessmentId;",
+                                    "pm.test('Nuevo intento incluye identificador', function () { pm.expect(newAssessmentId).to.be.ok; });",
+                                    "pm.collectionVariables.set('assessmentSecondId', newAssessmentId);",
+                                    "pm.collectionVariables.set('assessmentId', newAssessmentId);",
+                                    "const previousId = pm.collectionVariables.get('assessmentCompletedId');",
+                                    "pm.test('Existe intento previo para comparar', function () { pm.expect(previousId).to.be.ok; });",
+                                    "const pages = attempt.pages || attempt.sections || attempt.questionPages || [];",
+                                    "const firstPage = pages[0] || {};",
+                                    "const questions = firstPage.questions || firstPage.items || attempt.questions || [];",
+                                    "const normalizedQuestions = [];",
+                                    "questions.forEach(function (question) {\n    if (!question) { return; }\n    const qId = question.id || question.questionId || question.code;\n    const options = question.options || question.answers || question.choices || [];\n    if (qId && Array.isArray(options) && options.length) {\n        normalizedQuestions.push({\n            id: qId,\n            required: question.required !== false,\n            option: options[0],\n            altOption: options[1] || options[0]\n        });\n    }\n});",
+                                    "pm.test('Preguntas disponibles para segundo intento', function () { pm.expect(normalizedQuestions.length).to.be.above(0); });",
+                                    "const preparedAnswers = normalizedQuestions.slice(0, 3).map(function (q, index) {\n    const option = index === 0 ? q.option : (q.altOption || q.option);\n    const optionId = option.id || option.value || option.code || option.optionId;\n    const payload = { questionId: q.id, optionId: optionId };\n    if (option.choiceId) { payload.optionId = option.choiceId; }\n    if (option.value !== undefined && optionId === undefined) { payload.value = option.value; }\n    if (option.text) { payload.label = option.text; }\n    return payload;\n});",
+                                    "pm.collectionVariables.set('assessmentCompletionPayload', JSON.stringify({ answers: preparedAnswers }));"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-03 · Completar segundo intento",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al registrar respuestas finales', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Intento queda listo para finalizar', function () { pm.expect((json.status || '').toUpperCase()).to.match(/READY|COMPLETED|SUBMITTABLE/); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{{assessmentCompletionPayload}}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-03 · Finalizar segundo intento",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const statusCode = pm.response.code;",
+                                    "pm.test('Status 200 o 202 al finalizar intento', function () { pm.expect([200, 202]).to.include(statusCode); });",
+                                    "const json = statusCode === 204 ? {} : pm.response.json();",
+                                    "const resultId = (json && (json.resultId || json.id || json.assessmentResultId)) || '';",
+                                    "if (resultId) { pm.collectionVariables.set('assessmentSecondResultId', resultId); }",
+                                    "pm.test('Proceso de resultados iniciado o completado', function () { pm.expect((json.status || json.state || 'COMPLETED').toUpperCase()).to.match(/COMPLETED|SCORING|QUEUED/); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentId}}/submit",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentId}}",
+                                "submit"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-03 · Historial muestra ambos intentos",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al listar evaluaciones', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const list = json.items || json.assessments || json;",
+                                    "pm.test('Listado devuelve coleccion de intentos', function () { pm.expect(Array.isArray(list)).to.be.true; });",
+                                    "const prevCount = parseInt(pm.collectionVariables.get('assessmentHistoryCount') || '0', 10);",
+                                    "const newCount = Array.isArray(list) ? list.length : 0;",
+                                    "pm.test('Historial incorpora nuevo intento', function () { pm.expect(newCount).to.be.at.least(prevCount + 1); });",
+                                    "const firstId = pm.collectionVariables.get('assessmentCompletedId');",
+                                    "const secondId = pm.collectionVariables.get('assessmentId');",
+                                    "const firstEntry = (Array.isArray(list) ? list : []).find(function (item) {\n    const id = item.id || item.assessmentId;\n    return id && firstId && id.toString() === firstId.toString();\n});",
+                                    "const secondEntry = (Array.isArray(list) ? list : []).find(function (item) {\n    const id = item.id || item.assessmentId;\n    return id && secondId && id.toString() === secondId.toString();\n});",
+                                    "pm.test('Intento original permanece visible', function () { pm.expect(firstEntry).to.exist; });",
+                                    "pm.test('Intento nuevo aparece en listado', function () { pm.expect(secondEntry).to.exist; });",
+                                    "[firstEntry, secondEntry].forEach(function (entry) {\n    if (!entry) { return; }\n    const hasDate = Boolean(entry.date || entry.createdAt || entry.completedAt || entry.updatedAt);\n    const status = entry.status || entry.state;\n    const topAreas = entry.topAreas || entry.scores || entry.summary || [];\n    const actions = entry.actions || entry.links || {};\n    const actionArray = Array.isArray(actions) ? actions : Object.values(actions || {});\n    pm.expect(hasDate).to.be.true;\n    pm.expect(status).to.exist;\n    pm.expect(Array.isArray(topAreas) ? topAreas.length : Object.keys(topAreas || {}).length).to.be.at.least(1);\n    pm.expect((entry.detailUrl || entry.reportUrl || entry.downloadUrl || (actionArray && actionArray.length))).to.exist;\n});",
+                                    "pm.collectionVariables.set('assessmentSecondHistoryEntry', JSON.stringify(secondEntry || {}));",
+                                    "pm.collectionVariables.set('assessmentHistoryCountAfterSecond', newCount.toString());"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-03 · Detalle con comparativa",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al obtener detalle de intento', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const attempt = json.assessment || json;",
+                                    "pm.test('Detalle corresponde al intento seleccionado', function () { pm.expect((attempt.id || attempt.assessmentId || '').toString()).to.eql(pm.collectionVariables.get('assessmentId').toString()); });",
+                                    "const areas = attempt.areas || attempt.scores || attempt.topAreas || (attempt.result ? attempt.result.areas : []) || [];",
+                                    "if (Array.isArray(areas) && areas.length) {\n    const scored = areas.filter(function (area) { return area && (area.score !== undefined || area.value !== undefined); });\n    pm.test('Detalle incluye puntajes por area', function () { pm.expect(scored.length).to.be.at.least(3); });\n}",
+                                    "const comparison = attempt.comparison || attempt.comparisons || attempt.deltas || attempt.delta || attempt.previousAttempts || attempt.history || attempt.timeline || attempt.relatedAttempts || attempt.previousResults || [];",
+                                    "let hasComparison = false;",
+                                    "if (Array.isArray(comparison) && comparison.length) { hasComparison = true; }",
+                                    "else if (comparison && typeof comparison === 'object') { hasComparison = Object.keys(comparison).length > 0; }",
+                                    "if (!hasComparison) {",
+                                    "    const meta = attempt.meta || attempt.metadata || {};",
+                                    "    const compareMeta = meta.comparison || meta.history || meta.previous;",
+                                    "    if (Array.isArray(compareMeta) && compareMeta.length) { hasComparison = true; }",
+                                    "    else if (compareMeta && typeof compareMeta === 'object') { hasComparison = Object.keys(compareMeta).length > 0; }",
+                                    "}",
+                                    "pm.test('Detalle provee datos para comparar intentos', function () { pm.expect(hasComparison).to.be.true; });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-03 · Descargar informe PDF",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al descargar informe', function () { pm.response.to.have.status(200); });",
+                                    "const contentType = pm.response.headers.get('Content-Type') || '';",
+                                    "pm.test('Contenido es PDF', function () { pm.expect(contentType.toLowerCase()).to.include('pdf'); });",
+                                    "const disposition = pm.response.headers.get('Content-Disposition') || '';",
+                                    "pm.test('Cabecera de descarga presente', function () { pm.expect(disposition).to.match(/attachment|filename=/i); });",
+                                    "const size = pm.response.size().body || 0;",
+                                    "pm.test('Informe PDF contiene datos', function () { pm.expect(size).to.be.above(20); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentId}}/report.pdf",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentId}}",
+                                "report.pdf"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-03 · Registrar usuario alterno",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const uuid = pm.variables.replaceIn('{{$randomUUID}}');",
+                                    "const email = `qa.m2.alt.${uuid}@vocatio.test`.toLowerCase();",
+                                    "pm.collectionVariables.set('otherUserEmail', email);",
+                                    "const password = pm.collectionVariables.get('otherUserPassword') || pm.collectionVariables.get('testPassword') || 'Password1';",
+                                    "pm.collectionVariables.set('otherUserPassword', password);",
+                                    "pm.collectionVariables.set('otherAccessToken', '');"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 201 al registrar usuario alterno', function () { pm.response.to.have.status(201); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Registro alterno devuelve tokens', function () { pm.expect(json.tokens && json.tokens.accessToken).to.be.a('string').and.not.empty; });",
+                                    "pm.collectionVariables.set('otherAccessToken', json.tokens.accessToken);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{otherUserEmail}}\",\n  \"password\": \"{{otherUserPassword}}\",\n  \"rememberMe\": false\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-03 · Acceso denegado a detalle ajeno",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 403 al consultar intento ajeno', function () { pm.response.to.have.status(403); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje de error indica falta de permisos', function () { pm.expect((json.message || json.error || '').toLowerCase()).to.match(/forbid|deneg|permiso/); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{otherAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentCompletedId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentCompletedId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-03 · Acceso denegado a PDF ajeno",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 403 al descargar informe de otro usuario', function () { pm.response.to.have.status(403); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{otherAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentCompletedId}}/report.pdf",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentCompletedId}}",
+                                "report.pdf"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M2-04 · Gestion de evaluaciones previas",
+            "description": "Escenarios de eliminacion, proteccion y auditoria minima del historial.",
+            "item": [
+                {
+                    "name": "M2-04 · Bloqueo de borrado por usuario ajeno",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 403 al intentar borrar evaluacion ajena', function () { pm.response.to.have.status(403); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{otherAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentCompletedId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentCompletedId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-04 · Eliminar intento secundario",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const statusCode = pm.response.code;",
+                                    "pm.test('Status 200 o 204 al eliminar intento propio', function () { pm.expect([200, 204]).to.include(statusCode); });",
+                                    "if (statusCode !== 204) {\n    const json = pm.response.json();\n    pm.test('Respuesta de borrado confirma eliminacion', function () { pm.expect((json.message || json.status || '').toLowerCase()).to.match(/elimin|borr/); });\n}",
+                                    "pm.collectionVariables.set('assessmentDeletedId', pm.collectionVariables.get('assessmentId'));",
+                                    "pm.collectionVariables.set('assessmentSecondId', '');",
+                                    "pm.collectionVariables.set('assessmentSecondHistoryEntry', '');",
+                                    "pm.collectionVariables.set('assessmentId', pm.collectionVariables.get('assessmentCompletedId'));"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments/{{assessmentId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments",
+                                "{{assessmentId}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M2-04 · Historial actualizado tras borrado",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al refrescar historial', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "const list = json.items || json.assessments || json;",
+                                    "pm.test('Listado sigue accesible tras borrado', function () { pm.expect(Array.isArray(list)).to.be.true; });",
+                                    "const deletedId = pm.collectionVariables.get('assessmentDeletedId');",
+                                    "const removed = (Array.isArray(list) ? list : []).find(function (item) {\n    const id = item.id || item.assessmentId;\n    return id && deletedId && id.toString() === deletedId.toString();\n});",
+                                    "pm.test('Intento eliminado ya no aparece', function () { pm.expect(removed).to.not.exist; });",
+                                    "const firstId = pm.collectionVariables.get('assessmentCompletedId');",
+                                    "const firstEntry = (Array.isArray(list) ? list : []).find(function (item) {\n    const id = item.id || item.assessmentId;\n    return id && firstId && id.toString() === firstId.toString();\n});",
+                                    "pm.test('Se conserva al menos un intento completo', function () { pm.expect(firstEntry).to.exist; });",
+                                    "const prevCount = parseInt(pm.collectionVariables.get('assessmentHistoryCountAfterSecond') || '0', 10);",
+                                    "const newCount = Array.isArray(list) ? list.length : 0;",
+                                    "if (prevCount) { pm.test('Cantidad de evaluaciones disminuye tras borrar', function () { pm.expect(newCount).to.be.below(prevCount); }); }",
+                                    "pm.collectionVariables.set('assessmentHistoryCount', newCount.toString());"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/assessments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "assessments"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "testPassword",
+            "value": "Password1",
+            "type": "string"
+        },
+        {
+            "key": "m2UserEmail",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "m2UserPassword",
+            "value": "Password1",
+            "type": "string"
+        },
+        {
+            "key": "accessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "refreshToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "accessTokenExpiresAt",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "refreshTokenExpiresAt",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentValidationPayload",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentPartialPayload",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentCompletionPayload",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentRequiredQuestionId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentFirstPageMetadata",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentResultId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentHistoryEntry",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentCompletedId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentSecondId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentSecondResultId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentHistoryCount",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentHistoryCountAfterSecond",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentSecondHistoryEntry",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "assessmentDeletedId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "otherUserEmail",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "otherUserPassword",
+            "value": "Password1",
+            "type": "string"
+        },
+        {
+            "key": "otherAccessToken",
+            "value": "",
+            "type": "string"
+        }
+    ]
+}

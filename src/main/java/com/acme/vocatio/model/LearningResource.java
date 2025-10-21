@@ -37,5 +37,15 @@ public class LearningResource {
 
     @Column(name = "id_area_interes")
     private Long areaInteresId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_recurso", nullable = false, columnDefinition = "tipo_recurso_enum")
+    private TipoRecurso tipoRecurso;
+
+    @Column(name = "archivo_pdf", length = 500)
+    private String archivoPdf;
+
+    @Column(name = "url_valida")
+    private Boolean urlValida;
 }
 

@@ -1,17 +1,17 @@
 {
     "info": {
         "_postman_id": "8aedf829-e8bb-4ef7-9cc2-671199905056",
-        "name": "Vocatio API - M\u00f3dulo 1",
-        "description": "Colecci\u00f3n de pruebas funcionales para el M\u00f3dulo 1 (Gesti\u00f3n de cuenta y perfil). Incluye escenarios felices y de error para registro, login y perfil b\u00e1sico.",
+        "name": "Vocatio API - Modulo 1",
+        "description": "Coleccion de pruebas funcionales para el Modulo 1 (Gestion de cuenta y perfil). Incluye escenarios felices y de error para registro, login y perfil basico.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
         {
-            "name": "M1-01 \u00b7 Registro y acceso",
-            "description": "Escenarios de registro y autenticaci\u00f3n (historia #2).",
+            "name": "M1-01 · Registro y acceso",
+            "description": "Escenarios de registro y autenticacion (historia #2).",
             "item": [
                 {
-                    "name": "M1-01 \u00b7 Registro - \u00c9xito",
+                    "name": "M1-01 · Registro - Exito",
                     "event": [
                         {
                             "listen": "prerequest",
@@ -74,7 +74,7 @@
                     }
                 },
                 {
-                    "name": "M1-01 \u00b7 Registro - Email duplicado",
+                    "name": "M1-01 · Registro - Email duplicado",
                     "event": [
                         {
                             "listen": "test",
@@ -83,8 +83,8 @@
                                 "exec": [
                                     "pm.test('Status 409 por email duplicado', function () { pm.response.to.have.status(409); });",
                                     "const json = pm.response.json();",
-                                    "pm.test('Mensaje de email duplicado', function () { pm.expect(json.message).to.eql('El email ya est\u00e1 registrado'); });",
-                                    "pm.test('Se sugieren opciones para el usuario', function () { pm.expect(json.suggestions).to.include.members(['Inicia sesi\u00f3n con tu cuenta', 'Recupera tu contrase\u00f1a si la olvidaste']); });"
+                                    "pm.test('Mensaje de email duplicado', function () { pm.expect(json.message).to.eql('El email ya esta registrado'); });",
+                                    "pm.test('Se sugieren opciones para el usuario', function () { pm.expect(json.suggestions).to.include.members(['Inicia sesion con tu cuenta', 'Recupera tu contrasena si la olvidaste']); });"
                                 ]
                             }
                         }
@@ -114,7 +114,7 @@
                     }
                 },
                 {
-                    "name": "M1-01 \u00b7 Registro - Pol\u00edtica de contrase\u00f1a",
+                    "name": "M1-01 · Registro - Politica de contrasena",
                     "event": [
                         {
                             "listen": "prerequest",
@@ -131,10 +131,10 @@
                             "script": {
                                 "type": "text/javascript",
                                 "exec": [
-                                    "pm.test('Status 400 por contrase\u00f1a insegura', function () { pm.response.to.have.status(400); });",
+                                    "pm.test('Status 400 por contrasena insegura', function () { pm.response.to.have.status(400); });",
                                     "const json = pm.response.json();",
-                                    "pm.test('Mensaje gen\u00e9rico de validaci\u00f3n', function () { pm.expect(json.message).to.eql('Revise los datos enviados'); });",
-                                    "pm.test('Se devuelven las tres reglas incumplidas', function () {\n                    const expected = [\n                      'La contrase\u00f1a debe tener al menos 8 caracteres',\n                      'La contrase\u00f1a debe incluir al menos una letra may\u00fascula',\n                      'La contrase\u00f1a debe incluir al menos un n\u00famero'\n                    ];\n                    pm.expect(json.errors.password).to.be.an('array');\n                    pm.expect(json.errors.password).to.have.members(expected);\n                  });"
+                                    "pm.test('Mensaje generico de validacion', function () { pm.expect(json.message).to.eql('Revise los datos enviados'); });",
+                                    "pm.test('Se devuelven las tres reglas incumplidas', function () {\n                    const expected = [\n                      'La contrasena debe tener al menos 8 caracteres',\n                      'La contrasena debe incluir al menos una letra mayuscula',\n                      'La contrasena debe incluir al menos un numero'\n                    ];\n                    pm.expect(json.errors.password).to.be.an('array');\n                    pm.expect(json.errors.password).to.have.members(expected);\n                  });"
                                 ]
                             }
                         }
@@ -164,7 +164,7 @@
                     }
                 },
                 {
-                    "name": "M1-01 \u00b7 Login - \u00c9xito",
+                    "name": "M1-01 · Login - Exito",
                     "event": [
                         {
                             "listen": "test",
@@ -173,7 +173,7 @@
                                 "exec": [
                                     "pm.test('Status 200 en login', function () { pm.response.to.have.status(200); });",
                                     "const json = pm.response.json();",
-                                    "pm.test('Mensaje de login exitoso', function () { pm.expect(json.message).to.eql('Inicio de sesi\u00f3n exitoso'); });",
+                                    "pm.test('Mensaje de login exitoso', function () { pm.expect(json.message).to.eql('Inicio de sesion exitoso'); });",
                                     "pm.test('Tokens presentes en login', function () { pm.expect(json.tokens.accessToken).to.be.a('string').and.not.empty; });",
                                     "pm.collectionVariables.set('accessToken', json.tokens.accessToken);",
                                     "pm.collectionVariables.set('refreshToken', json.tokens.refreshToken);",
@@ -208,7 +208,7 @@
                     }
                 },
                 {
-                    "name": "M1-01 \u00b7 Login - Recordarme",
+                    "name": "M1-01 · Login - Recordarme",
                     "event": [
                         {
                             "listen": "test",
@@ -251,16 +251,16 @@
                     }
                 },
                 {
-                    "name": "M1-01 \u00b7 Login - Credenciales inv\u00e1lidas",
+                    "name": "M1-01 · Login - Credenciales invalidas",
                     "event": [
                         {
                             "listen": "test",
                             "script": {
                                 "type": "text/javascript",
                                 "exec": [
-                                    "pm.test('Status 401 por credenciales inv\u00e1lidas', function () { pm.response.to.have.status(401); });",
+                                    "pm.test('Status 401 por credenciales invalidas', function () { pm.response.to.have.status(401); });",
                                     "const json = pm.response.json();",
-                                    "pm.test('Mensaje de credenciales inv\u00e1lidas', function () { pm.expect(json.message).to.eql('Credenciales inv\u00e1lidas'); });"
+                                    "pm.test('Mensaje de credenciales invalidas', function () { pm.expect(json.message).to.eql('Credenciales invalidas'); });"
                                 ]
                             }
                         }
@@ -292,22 +292,22 @@
             ]
         },
         {
-            "name": "M1-02 \u00b7 Perfil b\u00e1sico",
-            "description": "Escenarios de perfil (historia #3).",
+            "name": "M1-02 · Perfil basico",
+            "description": "Escenarios de completar perfil con edad, grado e intereses (historia #4).",
             "item": [
                 {
-                    "name": "M1-02 \u00b7 Perfil - Obtener sin datos",
+                    "name": "M1-02 · Perfil - Obtener sin datos",
                     "event": [
                         {
                             "listen": "test",
                             "script": {
                                 "type": "text/javascript",
                                 "exec": [
-                                    "pm.test('Status 200 al obtener perfil vac\u00edo', function () { pm.response.to.have.status(200); });",
+                                    "pm.test('Status 200 al obtener perfil vacio', function () { pm.response.to.have.status(200); });",
                                     "const json = pm.response.json();",
                                     "pm.test('El email coincide con el usuario autenticado', function () { pm.expect(json.email).to.eql(pm.collectionVariables.get('registeredEmail')); });",
                                     "pm.test('Edad y grado iniciales nulos', function () { pm.expect(json.age).to.be.null; pm.expect(json.grade).to.be.null; pm.expect(json.gradeLabel).to.be.null; });",
-                                    "pm.test('Lista de intereses vac\u00eda', function () { pm.expect(json.interests).to.be.an('array').that.is.empty; });"
+                                    "pm.test('Lista de intereses vacia', function () { pm.expect(json.interests).to.be.an('array').that.is.empty; });"
                                 ]
                             }
                         }
@@ -333,7 +333,7 @@
                     }
                 },
                 {
-                    "name": "M1-02 \u00b7 Perfil - Actualizar datos b\u00e1sicos",
+                    "name": "M1-02 · Perfil - Actualizar datos basicos",
                     "event": [
                         {
                             "listen": "test",
@@ -342,8 +342,14 @@
                                 "exec": [
                                     "pm.test('Status 200 al actualizar perfil', function () { pm.response.to.have.status(200); });",
                                     "const json = pm.response.json();",
-                                    "pm.test('Mensaje de actualizaci\u00f3n', function () { pm.expect(json.message).to.eql('Perfil actualizado'); });",
-                                    "pm.test('Se devuelve perfil con datos normalizados', function () {\n                    pm.expect(json.profile.email).to.eql(pm.collectionVariables.get('registeredEmail'));\n                    pm.expect(json.profile.age).to.eql(18);\n                    pm.expect(json.profile.grade).to.eql('SUPERIOR_TECNICA_2');\n                    pm.expect(json.profile.gradeLabel).to.eql('2\u00b0 ciclo de instituto t\u00e9cnico');\n                    pm.expect(json.profile.interests).to.eql(['Tecnolog\u00eda', 'Arte']);\n                  });"
+                                    "pm.test('Toast de confirmacion de perfil actualizado', function () { pm.expect(json.message).to.eql('Perfil actualizado'); });",
+                                    "const profile = json.profile;",
+                                    "pm.test('Perfil devuelto incluye datos normalizados', function () {\n    pm.expect(profile.email).to.eql(pm.collectionVariables.get('registeredEmail'));\n    pm.expect(profile.age).to.eql(18);\n    pm.expect(profile.grade).to.eql('SUPERIOR_TECNICA_2');\n    pm.expect(profile.gradeLabel).to.eql('2° ciclo de instituto tecnico');\n    pm.expect(profile.interests).to.eql(['Tecnologia', 'Arte']);\n});",
+                                    "const interestAreaCatalog = {\n    'Tecnologia': 2,\n    'Tecnologia e Informatica': 2,\n    'Arte': 6,\n    'Arte y Creatividad': 6,\n    'Ciencias Exactas': 1,\n    'Ciencias de la Salud': 3,\n    'Ciencias Sociales': 4,\n    'Humanidades': 5,\n    'Negocios y Administracion': 7,\n    'Ingenieria': 8,\n    'Comunicacion': 9,\n    'Educacion': 10,\n    'Deportes y Recreacion': 11,\n    'Ciencias Ambientales': 12\n};",
+                                    "const mappedAreaIds = profile.interests\n    .map(function (interest) { return interestAreaCatalog[interest]; })\n    .filter(function (id) { return id !== undefined; });",
+                                    "pm.test('Intereses se mapean a areas de recomendacion conocidas', function () {\n    pm.expect(mappedAreaIds.length).to.eql(profile.interests.length);\n});",
+                                    "pm.collectionVariables.set('profileInterests', JSON.stringify(profile.interests));",
+                                    "pm.collectionVariables.set('profileInterestAreaIds', mappedAreaIds.join(','));"
                                 ]
                             }
                         }
@@ -362,7 +368,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"age\": 18,\n  \"grade\": \"SUPERIOR_TECNICA_2\",\n  \"interests\": [\n    \"  Tecnolog\u00eda  \",\n    \"Arte\",\n    \"Tecnolog\u00eda\",\n    \"Arte\"\n  ]\n}"
+                            "raw": "{\n  \"age\": 18,\n  \"grade\": \"superior_tecnica_2\",\n  \"interests\": [\n    \"  Tecnologia  \",\n    \"Arte\",\n    \"Tecnologia\",\n    \"Arte\",\n    \"TECNOLOGIA\"\n  ]\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/users/me",
@@ -377,7 +383,7 @@
                     }
                 },
                 {
-                    "name": "M1-02 \u00b7 Perfil - Obtener con datos",
+                    "name": "M1-02 · Perfil - Obtener con datos",
                     "event": [
                         {
                             "listen": "test",
@@ -386,7 +392,8 @@
                                 "exec": [
                                     "pm.test('Status 200 al consultar perfil actualizado', function () { pm.response.to.have.status(200); });",
                                     "const json = pm.response.json();",
-                                    "pm.test('Perfil persiste los cambios', function () {\n                    pm.expect(json.email).to.eql(pm.collectionVariables.get('registeredEmail'));\n                    pm.expect(json.age).to.eql(18);\n                    pm.expect(json.grade).to.eql('SUPERIOR_TECNICA_2');\n                    pm.expect(json.interests).to.eql(['Tecnolog\u00eda', 'Arte']);\n                  });"
+                                    "const storedInterests = JSON.parse(pm.collectionVariables.get('profileInterests'));",
+                                    "pm.test('Perfil persiste los cambios guardados', function () {\n    pm.expect(json.email).to.eql(pm.collectionVariables.get('registeredEmail'));\n    pm.expect(json.age).to.eql(18);\n    pm.expect(json.grade).to.eql('SUPERIOR_TECNICA_2');\n    pm.expect(json.gradeLabel).to.eql('2° ciclo de instituto tecnico');\n    pm.expect(json.interests).to.eql(storedInterests);\n});"
                                 ]
                             }
                         }
@@ -412,16 +419,72 @@
                     }
                 },
                 {
-                    "name": "M1-02 \u00b7 Perfil - Edad fuera de rango",
+                    "name": "M1-02 · Perfil - Recomendaciones alineadas a intereses",
                     "event": [
                         {
                             "listen": "test",
                             "script": {
                                 "type": "text/javascript",
                                 "exec": [
-                                    "pm.test('Status 400 por edad inv\u00e1lida', function () { pm.response.to.have.status(400); });",
+                                    "pm.test('Status 200 en recomendaciones por intereses', function () { pm.response.to.have.status(200); });",
+                                    "const storedAreaIds = pm.collectionVariables.get('profileInterestAreaIds');",
+                                    "pm.test('Areas derivadas del perfil disponibles', function () { pm.expect(storedAreaIds).to.be.a('string').and.not.empty; });",
+                                    "const requestedAreaIds = pm.request.url.query.get('areaIds');",
+                                    "pm.test('Consulta usa intereses actualizados', function () { pm.expect(requestedAreaIds).to.eql(storedAreaIds); });",
                                     "const json = pm.response.json();",
-                                    "pm.test('Mensaje espec\u00edfico para edad', function () { pm.expect(json.errors.age[0]).to.eql('La edad debe estar entre 13 y 30 a\u00f1os'); });"
+                                    "pm.test('Mensaje de recomendaciones basado en intereses', function () { pm.expect(json.message).to.eql('Recursos sugeridos basados en tus intereses'); });",
+                                    "pm.test('Recursos coinciden con las areas seleccionadas', function () {\n    pm.expect(json.resources).to.be.an('array');\n    if (json.resources.length > 0) {\n        const expected = storedAreaIds.split(',').map(function (id) { return parseInt(id, 10); });\n        json.resources.forEach(function (resource) {\n            if (resource.areaInteresId !== null && resource.areaInteresId !== undefined) {\n                pm.expect(expected).to.include(resource.areaInteresId);\n            }\n        });\n    }\n});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/learning-resources/by-interests?areaIds={{profileInterestAreaIds}}&page=0&size=5",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "learning-resources",
+                                "by-interests"
+                            ],
+                            "query": [
+                                {
+                                    "key": "areaIds",
+                                    "value": "{{profileInterestAreaIds}}"
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "5"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-02 · Perfil - Edad fuera de rango",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 400 por edad invalida', function () { pm.response.to.have.status(400); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje general de validacion', function () { pm.expect(json.message).to.eql('Revise los datos enviados'); });",
+                                    "pm.test('Mensaje especifico para age', function () { pm.expect(json.errors.age[0]).to.eql('La edad debe estar entre 13 y 30 anos'); });"
                                 ]
                             }
                         }
@@ -440,7 +503,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"age\": 12,\n  \"grade\": \"SECUNDARIA_3\",\n  \"interests\": [\"Tecnolog\u00eda\"]\n}"
+                            "raw": "{\n  \"age\": 12,\n  \"grade\": \"SECUNDARIA_3\",\n  \"interests\": [\"Tecnologia\"]\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/users/me",
@@ -455,7 +518,7 @@
                     }
                 },
                 {
-                    "name": "M1-02 \u00b7 Perfil - Grado inv\u00e1lido",
+                    "name": "M1-02 · Perfil - Grado invalido",
                     "event": [
                         {
                             "listen": "test",
@@ -464,7 +527,8 @@
                                 "exec": [
                                     "pm.test('Status 400 por grado inexistente', function () { pm.response.to.have.status(400); });",
                                     "const json = pm.response.json();",
-                                    "pm.test('Mensaje espec\u00edfico para grado', function () { pm.expect(json.errors.grade[0]).to.eql('El grado acad\u00e9mico no es v\u00e1lido'); });"
+                                    "pm.test('Mensaje general de validacion', function () { pm.expect(json.message).to.eql('Revise los datos enviados'); });",
+                                    "pm.test('Mensaje especifico para grade', function () { pm.expect(json.errors.grade[0]).to.eql('El grado academico no es valido'); });"
                                 ]
                             }
                         }
@@ -483,7 +547,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"age\": 18,\n  \"grade\": \"UNIVERSIDAD_10\",\n  \"interests\": [\"Tecnolog\u00eda\"]\n}"
+                            "raw": "{\n  \"age\": 18,\n  \"grade\": \"UNIVERSIDAD_10\",\n  \"interests\": [\"Tecnologia\"]\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/users/me",
@@ -498,16 +562,17 @@
                     }
                 },
                 {
-                    "name": "M1-02 \u00b7 Perfil - Intereses obligatorios",
+                    "name": "M1-02 · Perfil - Intereses obligatorios",
                     "event": [
                         {
                             "listen": "test",
                             "script": {
                                 "type": "text/javascript",
                                 "exec": [
-                                    "pm.test('Status 400 por intereses vac\u00edos', function () { pm.response.to.have.status(400); });",
+                                    "pm.test('Status 400 por intereses vacios', function () { pm.response.to.have.status(400); });",
                                     "const json = pm.response.json();",
-                                    "pm.test('Mensaje espec\u00edfico para intereses', function () { pm.expect(json.errors.interests[0]).to.eql('Selecciona al menos un inter\u00e9s'); });"
+                                    "pm.test('Mensaje general de validacion', function () { pm.expect(json.message).to.eql('Revise los datos enviados'); });",
+                                    "pm.test('Mensaje especifico para interests', function () { pm.expect(json.errors.interests[0]).to.eql('Selecciona al menos un interes'); });"
                                 ]
                             }
                         }
@@ -536,6 +601,710 @@
                             "path": [
                                 "users",
                                 "me"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M1-03 · Datos personales y contrasena",
+            "description": "Escenarios de actualizacion de datos personales y cambio seguro de contrasena (historia #4).",
+            "item": [
+                {
+                    "name": "M1-03 · Datos personales - Actualizar nombre y preferencias",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al actualizar datos personales', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje de confirmacion de datos personales', function () { pm.expect(json.message).to.eql('Datos personales actualizados'); });",
+                                    "pm.test('Nombre normalizado en el perfil', function () { pm.expect(json.profile.name).to.eql('Maria QA'); });",
+                                    "pm.test('Email permanece sin cambios', function () { pm.expect(json.profile.email).to.eql(pm.collectionVariables.get('registeredEmail')); });",
+                                    "pm.test('Preferencias publicas actualizadas', function () {\n  pm.expect(json.profile.preferences).to.be.an('object');\n  pm.expect(json.profile.preferences.newsletter).to.be.true;\n  pm.expect(json.profile.preferences.shareProfile).to.be.false;\n});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"  Maria QA  \",\n  \"preferences\": {\n    \" newsletter \": true,\n    \"shareProfile\": false\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-03 · Datos personales - Consultar cambios",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al obtener datos personales', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Nombre actualizado persistido', function () { pm.expect(json.name).to.eql('Maria QA'); });",
+                                    "pm.test('Preferencias reflejan los valores guardados', function () {\n  pm.expect(json.preferences).to.be.an('object');\n  pm.expect(json.preferences.newsletter).to.be.true;\n  pm.expect(json.preferences.shareProfile).to.be.false;\n});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-03 · Cambio contrasena - Exito",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al cambiar contrasena', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje pide reautenticacion', function () { pm.expect(json.message).to.eql('Contrasena actualizada. Inicia sesion nuevamente.'); });",
+                                    "pm.test('Bandera de exito verdadera', function () { pm.expect(json.success).to.be.true; });",
+                                    "pm.collectionVariables.set('testPassword', 'Password9');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"{{testPassword}}\",\n  \"newPassword\": \"Password9\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "change-password"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-03 · Login con nueva contrasena",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al reautenticar', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje de login exitoso tras cambio', function () { pm.expect(json.message).to.eql('Inicio de sesion exitoso'); });",
+                                    "pm.collectionVariables.set('accessToken', json.tokens.accessToken);",
+                                    "pm.collectionVariables.set('refreshToken', json.tokens.refreshToken);",
+                                    "pm.collectionVariables.set('accessTokenExpiresAt', json.tokens.accessTokenExpiresAt);",
+                                    "pm.collectionVariables.set('refreshTokenExpiresAt', json.tokens.refreshTokenExpiresAt);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{registeredEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-03 · Cambio contrasena - Politica de seguridad",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 400 por contrasena sin mayuscula', function () { pm.response.to.have.status(400); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje generico de validacion', function () { pm.expect(json.message).to.eql('Revise los datos enviados'); });",
+                                    "pm.test('Detalle indica politica incumplida', function () {\n  pm.expect(json).to.have.property('errors');\n  pm.expect(json.errors).to.have.property('newPassword');\n  pm.expect(json.errors.newPassword).to.include('La contrasena debe incluir al menos una letra mayuscula');\n});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"{{testPassword}}\",\n  \"newPassword\": \"password9\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "change-password"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-03 · Cambio contrasena - Igual a la actual",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 400 por contrasena repetida', function () { pm.response.to.have.status(400); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje exige contrasena diferente', function () { pm.expect(json.message).to.eql('La nueva contrasena debe ser diferente a la actual'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"{{testPassword}}\",\n  \"newPassword\": \"{{testPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "change-password"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-03 · Cambio contrasena - Contrasena actual incorrecta",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 400 por contrasena actual incorrecta', function () { pm.response.to.have.status(400); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje de contrasena actual incorrecta', function () { pm.expect(json.message).to.eql('La contrasena actual no es correcta'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"WrongPass99\",\n  \"newPassword\": \"Password10\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "change-password"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-03 · Cambio contrasena - Intento fallido adicional 2",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 400 en intento adicional 2', function () { pm.response.to.have.status(400); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje de contrasena actual incorrecta se mantiene', function () { pm.expect(json.message).to.eql('La contrasena actual no es correcta'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"WrongPass99\",\n  \"newPassword\": \"Password10\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "change-password"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-03 · Cambio contrasena - Intento fallido adicional 3",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 400 en intento adicional 3', function () { pm.response.to.have.status(400); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje consistente de contrasena incorrecta', function () { pm.expect(json.message).to.eql('La contrasena actual no es correcta'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"WrongPass99\",\n  \"newPassword\": \"Password10\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "change-password"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-03 · Cambio contrasena - Intento fallido adicional 4",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 400 en intento adicional 4', function () { pm.response.to.have.status(400); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje consistente tras multiples fallos', function () { pm.expect(json.message).to.eql('La contrasena actual no es correcta'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"WrongPass99\",\n  \"newPassword\": \"Password10\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "change-password"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-03 · Cambio contrasena - Rate limit alcanzado",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 429 al superar intentos', function () { pm.response.to.have.status(429); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje indica espera antes de reintentar', function () { pm.expect(json.message).to.match(/Has superado el limite de intentos/); });",
+                                    "pm.test('Incluye retryAfterSeconds positivo', function () { pm.expect(json.retryAfterSeconds).to.be.a('number').and.above(0); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"{{testPassword}}\",\n  \"newPassword\": \"Password10\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "change-password"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "M1-04 · Eliminacion definitiva de cuenta",
+            "description": "Escenarios de confirmacion y borrado de cuenta con revocacion de sesion (historia #5).",
+            "item": [
+                {
+                    "name": "M1-04 · Eliminar cuenta - Confirmacion obligatoria",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 400 por confirmacion invalida', function () { pm.response.to.have.status(400); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje exige escribir ELIMINAR', function () { pm.expect(json.message).to.eql(\"Debes escribir 'ELIMINAR' para confirmar\"); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"confirmation\": \"cancelar\",\n  \"currentPassword\": \"{{testPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-04 · Eliminar cuenta - Contrasena incorrecta",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 400 por contrasena incorrecta', function () { pm.response.to.have.status(400); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje de contrasena requerida correcta', function () { pm.expect(json.message).to.eql('La contrasena actual no es correcta'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"confirmation\": \"ELIMINAR\",\n  \"currentPassword\": \"WrongPass99\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-04 · Eliminar cuenta - Exito",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 200 al eliminar cuenta', function () { pm.response.to.have.status(200); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje confirma eliminacion irreversible', function () { pm.expect(json.message).to.eql('Tu cuenta y datos se eliminaron de forma irreversible. Todas tus sesiones fueron cerradas.'); });",
+                                    "pm.test('Se marca sin procesos pendientes', function () { pm.expect(json.pendingDeletion).to.be.false; });",
+                                    "const token = pm.collectionVariables.get('accessToken');",
+                                    "if (token) { pm.collectionVariables.set('deletedAccessToken', token); }",
+                                    "pm.collectionVariables.set('accessToken', '');",
+                                    "pm.collectionVariables.set('refreshToken', '');",
+                                    "pm.collectionVariables.set('accessTokenExpiresAt', '');",
+                                    "pm.collectionVariables.set('refreshTokenExpiresAt', '');"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"confirmation\": \"ELIMINAR\",\n  \"currentPassword\": \"{{testPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-04 · Eliminar cuenta - Sesion invalida tras borrado",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Sesion previa queda invalida', function () { pm.expect([401, 404]).to.include(pm.response.code); });",
+                                    "const contentType = pm.response.headers.get('Content-Type') || '';",
+                                    "if (contentType.includes('application/json')) {",
+                                    "  try {",
+                                    "    const json = pm.response.json();",
+                                    "    pm.test('Mensaje informa que la cuenta ya no existe', function () { pm.expect(json.message).to.match(/no encontrado|no existe/i); });",
+                                    "  } catch (error) {",
+                                    "    pm.test('Respuesta vacia tras borrar cuenta', function () { pm.expect(pm.response.text()).to.be.a('string'); });",
+                                    "  }",
+                                    "} else {",
+                                    "  pm.test('Respuesta no JSON tras borrar cuenta', function () { pm.expect(pm.response.text()).to.be.a('string'); });",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{deletedAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "M1-04 · Eliminar cuenta - Login posterior invalido",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test('Status 401 al iniciar sesion con cuenta eliminada', function () { pm.response.to.have.status(401); });",
+                                    "const json = pm.response.json();",
+                                    "pm.test('Mensaje informa credenciales invalidas tras borrado', function () { pm.expect(json.message).to.eql('Credenciales invalidas'); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{registeredEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
                             ]
                         }
                     }
@@ -582,6 +1351,11 @@
         {
             "key": "rememberMeMinDays",
             "value": "20",
+            "type": "string"
+        },
+        {
+            "key": "deletedAccessToken",
+            "value": "",
             "type": "string"
         }
     ]

@@ -110,6 +110,29 @@ public class LearningResourceService {
     }
 
     /**
+     * Guarda un recurso en favoritos con validación de enlace externo.
+     */
+    @Transactional
+    public void saveResourceWithValidation(Long userId, Long resourceId, UrlValidationService urlValidationService) {
+        if (savedResourceRepository.existsByUserIdAndResourceId(userId, resourceId)) {
+            return; // Ya está guardado
+        }
+
+        // Obtener el recurso para validar si es enlace externo
+        LearningResource resource = learningResourceRepository.findById(resourceId)
+            .orElseThrow(() -> new RuntimeException("Recurso no encontrado"));
+
+        // Si es enlace externo, validar la URL
+        if (resource.getTipoRecurso() != null && resource.getTipoRecurso().isEnlaceExterno()) {
+            urlValidationService.validateExternalLink(resource.getUrlRecurso());
+        }
+
+        SavedResource savedResource = new SavedResource();
+        savedResource.setId(new SavedResource.SavedResourceId(userId, resourceId));
+        savedResourceRepository.save(savedResource);
+    }
+
+    /**
      * Elimina un recurso de favoritos.
      */
     @Transactional
@@ -152,7 +175,12 @@ public class LearningResourceService {
                 resource.getDescripcion(),
                 resource.getDuracionMinutos(),
                 resource.getAreaInteresId(),
-                isSaved
+                isSaved,
+                resource.getTipoRecurso(),
+                resource.getTipoRecurso() != null ? resource.getTipoRecurso().isDescargable() : false,
+                resource.getTipoRecurso() != null ? resource.getTipoRecurso().isEnlaceExterno() : false,
+                resource.getArchivoPdf(),
+                resource.getUrlValida()
         );
     }
 }

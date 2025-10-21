@@ -151,7 +151,8 @@ class UserProfileControllerTest {
                                     "  Tecnología  ",
                                     "Arte",
                                     "Tecnología",
-                                    "Arte"
+                                    "Arte",
+                                    "TECNOLOGÍA"
                                   ]
                                 }
                                 """))

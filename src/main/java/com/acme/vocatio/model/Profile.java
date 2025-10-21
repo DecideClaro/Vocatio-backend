@@ -41,4 +41,7 @@ public class Profile {
 
     @Column(name = "personal_interests", columnDefinition = "jsonb")
     private String personalInterests;
+
+    @Column(name = "public_preferences", columnDefinition = "jsonb")
+    private String publicPreferences;
 }

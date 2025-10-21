@@ -4,8 +4,11 @@ import com.acme.vocatio.dto.learningresource.LearningResourceResponse;
 import com.acme.vocatio.dto.learningresource.SaveResourceRequest;
 import com.acme.vocatio.security.UserPrincipal;
 import com.acme.vocatio.service.LearningResourceService;
+import com.acme.vocatio.service.PdfDownloadService;
+import com.acme.vocatio.service.UrlValidationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +21,13 @@ import java.util.Map;
  * Endpoints para ver materiales sugeridos por carrera, área vocacional y gestionar favoritos.
  */
 @RestController
-@RequestMapping("/api/learning-resources")
+@RequestMapping("/learning-resources")
 @RequiredArgsConstructor
 public class LearningResourceController {
 
     private final LearningResourceService learningResourceService;
+    private final PdfDownloadService pdfDownloadService;
+    private final UrlValidationService urlValidationService;
 
     /**
      * GET /api/learning-resources/by-career/{careerId}
@@ -115,7 +120,7 @@ public class LearningResourceController {
 
     /**
      * POST /api/learning-resources/save
-     * Guarda un recurso en favoritos.
+     * Guarda un recurso en favoritos con validación de enlace externo.
      */
     @PostMapping("/save")
     public ResponseEntity<Map<String, String>> saveResource(
@@ -123,9 +128,18 @@ public class LearningResourceController {
             Authentication authentication) {
 
         UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
-        learningResourceService.saveResource(principal.getUser().getId(), request.resourceId());
+        
+        try {
+            learningResourceService.saveResourceWithValidation(
+                principal.getUser().getId(), 
+                request.resourceId(), 
+                urlValidationService
+            );
 
-        return ResponseEntity.ok(Map.of("message", "Recurso guardado en favoritos"));
+            return ResponseEntity.ok(Map.of("message", "Recurso guardado en favoritos"));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("message", "Error: " + e.getMessage()));
+        }
     }
 
     /**
@@ -156,5 +170,45 @@ public class LearningResourceController {
         boolean isSaved = learningResourceService.isResourceSaved(principal.getUser().getId(), resourceId);
 
         return ResponseEntity.ok(Map.of("isSaved", isSaved));
+    }
+
+    /**
+     * GET /api/learning-resources/{resourceId}/download
+     * Descarga un archivo PDF del recurso.
+     */
+    @GetMapping("/{resourceId}/download")
+    public ResponseEntity<Resource> downloadPdf(
+            @PathVariable Long resourceId,
+            Authentication authentication) {
+
+        // Validar autenticación (el principal se usa implícitamente para seguridad)
+        return pdfDownloadService.downloadPdf(resourceId);
+    }
+
+    /**
+     * POST /api/learning-resources/{resourceId}/validate-link
+     * Valida un enlace externo antes de guardarlo.
+     */
+    @PostMapping("/{resourceId}/validate-link")
+    public ResponseEntity<Map<String, Object>> validateExternalLink(
+            @PathVariable Long resourceId,
+            Authentication authentication) {
+
+        // Validación de autenticación implícita
+        
+        try {
+            // TODO: Implementar validación específica del recurso
+            // Por ahora retornamos válido como placeholder
+            return ResponseEntity.ok(Map.of(
+                "valid", true,
+                "message", "Enlace válido"
+            ));
+            
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of(
+                "valid", false,
+                "message", "Enlace no válido"
+            ));
+        }
     }
 }
