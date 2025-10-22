@@ -1,7 +1,6 @@
 name: CI
 on:
-  push:
-    branches: [main]
+  push: { branches: [main] }
   pull_request:
 
 permissions:
@@ -17,17 +16,12 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-
-      - name: Cache Maven
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          cache: 'maven'
 
       - name: Build & test with coverage
         run: mvn -B -ntp clean verify
 
-      - name: Check coverage ≥ 80 %
+      - name: Enforce JaCoCo coverage >= 0.80
         run: |
           RATE=$(xmllint --xpath \
             "string(//counter[@type='INSTRUCTION']/@covered div (//counter[@type='INSTRUCTION']/@covered + //counter[@type='INSTRUCTION']/@missed))" \
