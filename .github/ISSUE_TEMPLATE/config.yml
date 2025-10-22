@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "Soporte interno"
+    url: "mailto:soporte@vocatio.local"
+    about: "Usa este canal para incidentes urgentes o credenciales."
+  - name: "Documentación del proyecto"
+    url: "https://github.com/vocatio-team/backend/wiki"
+    about: "Consulta guías técnicas, decisiones de arquitectura y FAQs."

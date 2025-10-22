@@ -1,0 +1,18 @@
+# Reglas de ownership para Vocatio.
+# Ajusta los equipos/usuarios según la estructura real del repositorio.
+
+# Equipo responsable por todo el backend.
+* @DecideClaro
+
+# Área de dominio (servicios, controladores, dto, etc.).
+src/main/java/ @DecideClaro
+src/main/resources/ @DecideClaro
+
+# Tests automatizados.
+src/test/ @DecideClaro
+
+# Infraestructura y automatización.
+.github/ @DecideClaro
+Dockerfile @DecideClaro
+docker-compose.yml @DecideClaro
+render.yaml @DecideClaro
