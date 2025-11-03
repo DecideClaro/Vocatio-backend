@@ -1,6 +1,10 @@
 package com.acme.vocatio.controller;
 
+import com.acme.vocatio.dto.assessment.*;
+import com.acme.vocatio.model.User;
+import com.acme.vocatio.repository.UserRepository;
 import com.acme.vocatio.security.UserPrincipal;
+import com.acme.vocatio.service.AssessmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -8,31 +12,26 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
- * Documentación de los flujos del módulo 2 (evaluaciones vocacionales).
- *
- * <p>Las implementaciones concretas aún están en progreso, pero se registran los contratos
- * esperados para facilitar el trabajo cruzado entre equipos FE/QA. Cada endpoint responde 501
- * (Not Implemented) hasta que el servicio correspondiente esté disponible.</p>
+ * Controlador de evaluaciones vocacionales (Módulo 2).
+ * Gestiona intentos, resultados y reportes del test vocacional.
  */
 @RestController
 @RequestMapping("/assessments")
 @RequiredArgsConstructor
 @Tag(name = "Evaluaciones vocacionales", description = "Intentos, resultados y reportes del test")
 public class AssessmentController {
+
+    private final AssessmentService assessmentService;
+    private final UserRepository userRepository;
 
     @PostMapping
     @Operation(
@@ -57,8 +56,16 @@ public class AssessmentController {
                                     schema = @Schema(example = "{\n  \"message\": \"Tienes un test pendiente\",\n  \"pendingAssessmentId\": \"a1b2c3\"\n}")))
             }
     )
-    public ResponseEntity<Void> createAssessment(@AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    public ResponseEntity<AssessmentResponse> createAssessment(@AuthenticationPrincipal UserPrincipal principal) {
+        User user = userRepository.findById(principal.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        try {
+            AssessmentResponse response = assessmentService.createAssessment(user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     @PatchMapping("/{assessmentId}")
@@ -91,12 +98,20 @@ public class AssessmentController {
                                     schema = @Schema(example = "{\n  \"message\": \"No autorizado\"\n}")))
             }
     )
-    public ResponseEntity<Void> saveProgress(
+    public ResponseEntity<AssessmentResponse> saveProgress(
             @AuthenticationPrincipal UserPrincipal principal,
             @Parameter(description = "Identificador del intento") @PathVariable String assessmentId,
-            @org.springframework.web.bind.annotation.RequestBody Map<String, Object> request
+            @org.springframework.web.bind.annotation.RequestBody SaveAnswersRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        User user = userRepository.findById(principal.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        try {
+            AssessmentResponse response = assessmentService.saveProgress(Long.parseLong(assessmentId), user, request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @GetMapping("/{assessmentId}")
@@ -126,11 +141,21 @@ public class AssessmentController {
                                     schema = @Schema(example = "{\n  \"message\": \"Acceso denegado\"\n}")))
             }
     )
-    public ResponseEntity<Void> getAssessment(
+    public ResponseEntity<AssessmentResponse> getAssessment(
             @AuthenticationPrincipal UserPrincipal principal,
             @Parameter(description = "Identificador del intento") @PathVariable String assessmentId
     ) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        User user = userRepository.findById(principal.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        try {
+            AssessmentResponse response = assessmentService.getAssessment(Long.parseLong(assessmentId), user);
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @PostMapping("/{assessmentId}/submit")
@@ -165,11 +190,21 @@ public class AssessmentController {
                                     schema = @Schema(example = "{\n  \"message\": \"No autorizado\"\n}")))
             }
     )
-    public ResponseEntity<Void> submitAssessment(
+    public ResponseEntity<SubmitAssessmentResponse> submitAssessment(
             @AuthenticationPrincipal UserPrincipal principal,
             @Parameter(description = "Identificador del intento") @PathVariable String assessmentId
     ) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        User user = userRepository.findById(principal.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        try {
+            SubmitAssessmentResponse response = assessmentService.submitAssessment(Long.parseLong(assessmentId), user);
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @GetMapping("/{assessmentId}/result")
@@ -199,11 +234,21 @@ public class AssessmentController {
                                     schema = @Schema(example = "{\n  \"message\": \"Intenta nuevamente, ocurrió un error al calcular\"\n}")))
             }
     )
-    public ResponseEntity<Void> getResult(
+    public ResponseEntity<AssessmentResultResponse> getResult(
             @AuthenticationPrincipal UserPrincipal principal,
             @Parameter(description = "Identificador del intento") @PathVariable String assessmentId
     ) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        User user = userRepository.findById(principal.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        try {
+            AssessmentResultResponse response = assessmentService.getResult(Long.parseLong(assessmentId), user);
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @GetMapping
@@ -223,8 +268,12 @@ public class AssessmentController {
                                     schema = @Schema(example = "{\n  \"message\": \"No autorizado\"\n}")))
             }
     )
-    public ResponseEntity<Void> listAssessments(@AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    public ResponseEntity<AssessmentListResponse> listAssessments(@AuthenticationPrincipal UserPrincipal principal) {
+        User user = userRepository.findById(principal.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        AssessmentListResponse response = assessmentService.listAssessments(user);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{assessmentId}/report.pdf")
@@ -254,11 +303,13 @@ public class AssessmentController {
                                     schema = @Schema(example = "{\n  \"message\": \"Evaluación no encontrada\"\n}")))
             }
     )
-    public ResponseEntity<Void> downloadReport(
+    public ResponseEntity<Map<String, String>> downloadReport(
             @AuthenticationPrincipal UserPrincipal principal,
             @Parameter(description = "Identificador del intento") @PathVariable String assessmentId
     ) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        // PDF generation is not implemented yet - return 501
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                .body(Map.of("message", "Generacion de PDF pendiente de implementacion"));
     }
 
     @DeleteMapping("/{assessmentId}")
@@ -286,10 +337,20 @@ public class AssessmentController {
                                     schema = @Schema(example = "{\n  \"message\": \"Acceso denegado\"\n}")))
             }
     )
-    public ResponseEntity<Void> deleteAssessment(
+    public ResponseEntity<Map<String, String>> deleteAssessment(
             @AuthenticationPrincipal UserPrincipal principal,
             @Parameter(description = "Identificador del intento") @PathVariable String assessmentId
     ) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        User user = userRepository.findById(principal.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        try {
+            assessmentService.deleteAssessment(Long.parseLong(assessmentId), user);
+            return ResponseEntity.ok(Map.of("message", "Evaluacion eliminada"));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }
