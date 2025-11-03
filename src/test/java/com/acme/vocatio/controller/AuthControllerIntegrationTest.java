@@ -69,7 +69,7 @@ class AuthControllerIntegrationTest {
                                 }
                                 """.formatted(email)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Inicio de sesión exitoso"))
+                .andExpect(jsonPath("$.message").value("Inicio de sesion exitoso"))
                 .andExpect(jsonPath("$.user.email").value(email))
                 .andExpect(jsonPath("$.tokens.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.tokens.refreshToken").isNotEmpty());
@@ -90,7 +90,7 @@ class AuthControllerIntegrationTest {
                                 }
                                 """.formatted(email)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Credenciales inválidas"));
+                .andExpect(jsonPath("$.message").value("Credenciales invalidas"));
     }
 
     @Test

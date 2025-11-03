@@ -118,6 +118,6 @@ public class AuthController {
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody ChangePasswordRequest request) {
         authService.changePassword(principal.getUser().getId(), request);
-        return ResponseEntity.ok(new ChangePasswordResponse("Contraseña actualizada. Inicia sesión nuevamente.", true));
+        return ResponseEntity.ok(new ChangePasswordResponse("Contrasena actualizada. Inicia sesion nuevamente.", true));
     }
 }

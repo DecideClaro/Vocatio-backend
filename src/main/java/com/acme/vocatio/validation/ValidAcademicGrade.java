@@ -18,7 +18,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface ValidAcademicGrade {
 
-    String message() default "El grado académico no es válido";
+    String message() default "El grado academico no es valido";
 
     Class<?>[] groups() default {};
 

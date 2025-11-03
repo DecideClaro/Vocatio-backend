@@ -33,7 +33,7 @@ public class UserAccountService {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
-            throw new InvalidCurrentPasswordException("La contraseña actual no es correcta");
+            throw new InvalidCurrentPasswordException("La contrasena actual no es correcta");
         }
 
         refreshTokenService.deleteAllForUser(user);
