@@ -58,7 +58,7 @@ El repositorio incluye colecciones de Postman (M1, M2, M3, M4) en el directorio 
 
 ### Ejecución automática en CI/CD
 
-Cada push a las ramas `dev` o `main` ejecuta automáticamente todas las colecciones de Postman mediante GitHub Actions. El workflow:
+Cada push a las ramas `dev` o `main`, así como pull requests hacia estas ramas, ejecuta automáticamente todas las colecciones de Postman mediante GitHub Actions. El workflow:
 
 1. Levanta una base de datos PostgreSQL
 2. Inicia la aplicación Spring Boot
