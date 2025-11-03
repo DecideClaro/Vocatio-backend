@@ -52,6 +52,39 @@ Para ejecutar la aplicación localmente (requiere que las variables de entorno e
 
 El repositorio incluye un `Dockerfile` multi-stage listo para Render. También puedes levantar los servicios definidos en `docker-compose.yml` para un entorno local con PostgreSQL.
 
+## Pruebas de API con Postman
+
+El repositorio incluye colecciones de Postman (M1, M2, M3, M4) en el directorio `postman/` para validar los endpoints de la API.
+
+### Ejecución automática en CI/CD
+
+Cada push a las ramas `dev` o `main`, así como pull requests hacia estas ramas, ejecuta automáticamente todas las colecciones de Postman mediante GitHub Actions. El workflow:
+
+1. Levanta una base de datos PostgreSQL
+2. Inicia la aplicación Spring Boot
+3. Ejecuta las 4 colecciones de Postman (M1-M4) usando Newman
+4. Publica los resultados en la UI de GitHub Actions
+5. Genera reportes HTML descargables como artifacts
+
+Los resultados de las pruebas están visibles en:
+- **GitHub Actions → Checks**: Resumen de tests pasados/fallidos
+- **GitHub Actions → Artifacts**: Reportes HTML detallados de cada módulo
+
+### Ejecución local
+
+Para ejecutar las pruebas localmente con Newman:
+
+```bash
+# Instalar Newman
+npm install -g newman newman-reporter-htmlextra
+
+# Ejecutar una colección específica
+newman run postman/Vocatio-M1.postman_collection.json \
+  -e postman/Vocatio-Universal.postman_environment.json \
+  --reporters cli,htmlextra \
+  --reporter-htmlextra-export report.html
+```
+
 ## Solución de problemas
 
 1. **404 en la URL raíz (`/`)** – recuerda que la API está montada bajo `/api/v1`. Ajusta el `context-path` con `SERVER_CONTEXT_PATH` si necesitas responder en `/`.
