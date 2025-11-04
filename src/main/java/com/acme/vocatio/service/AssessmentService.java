@@ -62,7 +62,6 @@ public class AssessmentService {
                         a -> a
                 ));
 
-        List<String> errors = new ArrayList<>();
         
         for (SaveAnswersRequest.AnswerInput input : request.getAnswers()) {
             try {
@@ -86,8 +85,8 @@ public class AssessmentService {
                 answer.setSelectedOption(option);
                 answer.setAnsweredAt(Instant.now());
 
-            } catch (Exception e) {
-                errors.add("Error procesando pregunta " + input.getQuestionId());
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("ID de pregunta u opcion invalido");
             }
         }
 

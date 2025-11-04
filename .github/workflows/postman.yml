@@ -2,8 +2,9 @@ name: Postman API Tests
 
 on:
   push:
-    branches: [main, dev]
+    branches: [dev, main]
   pull_request:
+    branches: [dev, main]
 
 permissions:
   contents: read
@@ -12,14 +13,14 @@ permissions:
 jobs:
   postman-tests:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:15
         env:
           POSTGRES_DB: vocatio_test
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: vocatio_user
+          POSTGRES_PASSWORD: vocatio_pass
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -29,105 +30,112 @@ jobs:
           - 5432:5432
 
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Java
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
-          cache: 'maven'
-      
+          cache: maven
+
       - name: Build application
         run: mvn -B -ntp clean package -DskipTests
-      
-      - name: Start application
+
+      - name: Start application in background
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vocatio_test
-          SPRING_DATASOURCE_USERNAME: test_user
-          SPRING_DATASOURCE_PASSWORD: test_password
-          JWT_SECRET: test-secret-key-for-jwt-token-generation-min-256-bits
-          SERVER_PORT: 8080
+          SPRING_DATASOURCE_USERNAME: vocatio_user
+          SPRING_DATASOURCE_PASSWORD: vocatio_pass
+          JWT_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          SERVER_PORT: 8080 # Puerto 8080 asegurado
         run: |
-          java -jar target/vocatio-0.0.1-SNAPSHOT.jar &
-          APP_PID=$!
-          echo "APP_PID=$APP_PID" >> $GITHUB_ENV
-          
-          # Wait for application to start
+          java -jar target/*.jar &
+          echo $! > app.pid
+
+      - name: Wait for application to be ready
+        run: |
           echo "Waiting for application to start..."
           for i in {1..30}; do
-            if curl -s http://localhost:8080/api/v1/actuator/health > /dev/null 2>&1; then
+            # Health Check con la URL /api/v1 correcta
+            if curl -sf http://localhost:8080/api/v1/actuator/health > /dev/null; then
               echo "Application is ready!"
-              break
+              exit 0
             fi
-            echo "Attempt $i: Application not ready yet..."
+            echo "Attempt $i/30 - Application not ready yet..."
             sleep 2
           done
-      
-      - name: Set up Node.js for Newman
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
+          echo "Application failed to start in time"
+          cat app.pid | xargs -r ps -p
+          exit 1
+
       - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra
-      
-      - name: Run Module 1 Postman Tests
+
+      - name: Create results directory
+        run: mkdir -p results
+
+      - name: Run Postman Collection - M1
+        continue-on-error: true
         run: |
           newman run postman/Vocatio-M1.postman_collection.json \
-            --environment postman/Vocatio-Universal.postman_environment.json \
+            -e postman/Vocatio-Universal.postman_environment.json \
             --env-var "baseUrl=http://localhost:8080/api/v1" \
-            --reporters cli,htmlextra \
-            --reporter-htmlextra-export newman/module1-report.html \
-            --bail
-        continue-on-error: false
-      
-      - name: Run Module 2 Postman Tests
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export results/junit-M1.xml \
+            --reporter-htmlextra-export results/report-M1.html
+
+      - name: Run Postman Collection - M2
+        continue-on-error: true
         run: |
           newman run postman/Vocatio-M2.postman_collection.json \
-            --environment postman/Vocatio-Universal.postman_environment.json \
+            -e postman/Vocatio-Universal.postman_environment.json \
             --env-var "baseUrl=http://localhost:8080/api/v1" \
-            --reporters cli,htmlextra \
-            --reporter-htmlextra-export newman/module2-report.html \
-            --bail
-        continue-on-error: false
-      
-      # Modules 3, 4, and 5 are disabled as per requirement
-      # - name: Run Module 3 Postman Tests
-      #   run: |
-      #     newman run postman/Vocatio-M3.postman_collection.json \
-      #       --environment postman/Vocatio-Universal.postman_environment.json \
-      #       --env-var "baseUrl=http://localhost:8080/api/v1" \
-      #       --reporters cli,htmlextra \
-      #       --reporter-htmlextra-export newman/module3-report.html \
-      #       --bail
-      #   continue-on-error: false
-      
-      # - name: Run Module 4 Postman Tests
-      #   run: |
-      #     newman run postman/Vocatio-M4.postman_collection.json \
-      #       --environment postman/Vocatio-Universal.postman_environment.json \
-      #       --env-var "baseUrl=http://localhost:8080/api/v1" \
-      #       --reporters cli,htmlextra \
-      #       --reporter-htmlextra-export newman/module4-report.html \
-      #       --bail
-      #   continue-on-error: false
-      
-      # Module 5 does not exist yet
-      # - name: Run Module 5 Postman Tests
-      #   (when available)
-      
-      - name: Upload Newman Reports
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export results/junit-M2.xml \
+            --reporter-htmlextra-export results/report-M2.html
+
+      - name: Run Postman Collection - M3
+        continue-on-error: true
+        run: |
+          newman run postman/Vocatio-M3.postman_collection.json \
+            -e postman/Vocatio-Universal.postman_environment.json \
+            --env-var "baseUrl=http://localhost:8080/api/v1" \
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export results/junit-M3.xml \
+            --reporter-htmlextra-export results/report-M3.html
+
+      - name: Run Postman Collection - M4
+        continue-on-error: true
+        run: |
+          newman run postman/Vocatio-M4.postman_collection.json \
+            -e postman/Vocatio-Universal.postman_environment.json \
+            --env-var "baseUrl=http://localhost:8080/api/v1" \
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export results/junit-M4.xml \
+            --reporter-htmlextra-export results/report-M4.html
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: postman-test-reports
-          path: newman/*.html
+          files: |
+            results/junit-*.xml
+          check_name: Postman Test Results
+          comment_mode: off
+
+      - name: Upload HTML Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: postman-reports
+          path: results/*.html
           retention-days: 30
-      
+
       - name: Stop application
         if: always()
         run: |
-          if [ ! -z "$APP_PID" ]; then
-            kill $APP_PID || true
+          if [ -f app.pid ]; then
+            kill $(cat app.pid) || true
           fi

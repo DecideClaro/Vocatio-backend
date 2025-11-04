@@ -66,11 +66,12 @@ public class JwtService {
             Jws<Claims> claimsJws =
                     Jwts.parserBuilder().setSigningKey(jwtProperties.getSigningKey()).build().parseClaimsJws(token);
             return claimsJws.getBody();
-        } catch (ExpiredJwtException ex) {
-            throw ex;
         } catch (SecurityException ex) {
+            // Este catch SÍ es útil porque transforma la excepción y añade contexto.
             throw new IllegalArgumentException("Token inválido", ex);
         }
+        // El bloque "catch (ExpiredJwtException ex)" redundante fue eliminado
+        // (lo cual soluciona la advertencia original de Qodana).
     }
 
     private boolean isTokenExpired(String token) {
