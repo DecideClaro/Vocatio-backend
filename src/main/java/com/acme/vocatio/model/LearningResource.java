@@ -39,7 +39,7 @@ public class LearningResource {
     private Long areaInteresId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_recurso", nullable = false, columnDefinition = "tipo_recurso_enum")
+    @Column(name = "tipo_recurso", nullable = false)
     private TipoRecurso tipoRecurso;
 
     @Column(name = "archivo_pdf", length = 500)
