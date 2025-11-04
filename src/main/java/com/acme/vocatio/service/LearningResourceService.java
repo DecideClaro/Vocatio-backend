@@ -177,8 +177,9 @@ public class LearningResourceService {
                 resource.getAreaInteresId(),
                 isSaved,
                 resource.getTipoRecurso(),
-                resource.getTipoRecurso() != null ? resource.getTipoRecurso().isDescargable() : false,
-                resource.getTipoRecurso() != null ? resource.getTipoRecurso().isEnlaceExterno() : false,
+                resource.getTipoRecurso() != null && resource.getTipoRecurso().isDescargable(),
+                // Expresión ternaria simplificada (isEnlaceExterno)
+                resource.getTipoRecurso() != null && resource.getTipoRecurso().isEnlaceExterno(),
                 resource.getArchivoPdf(),
                 resource.getUrlValida()
         );
