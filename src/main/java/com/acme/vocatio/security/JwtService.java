@@ -62,16 +62,16 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        try {
-            Jws<Claims> claimsJws =
-                    Jwts.parserBuilder().setSigningKey(jwtProperties.getSigningKey()).build().parseClaimsJws(token);
-            return claimsJws.getBody();
-        } catch (ExpiredJwtException ex) {
-            throw ex;
-        } catch (SecurityException ex) {
-            throw new IllegalArgumentException("Token inválido", ex);
-        }
-    }
+        try {
+            Jws<Claims> claimsJws =
+                    Jwts.parserBuilder().setSigningKey(jwtProperties.getSigningKey()).build().parseClaimsJws(token);
+            return claimsJws.getBody();
+        } catch (SecurityException ex) {
+            // Este catch SÍ es útil porque transforma la excepción y añade contexto.
+            throw new IllegalArgumentException("Token inválido", ex);
+        }
+        // El bloque "catch (ExpiredJwtException ex) { throw ex; }" se ha eliminado.
+    }
 
     private boolean isTokenExpired(String token) {
         try {
