@@ -41,19 +41,12 @@ jobs:
       - name: Build application
         run: mvn -B -ntp clean package -DskipTests
       
-      - name: Initialize database schema
-        env:
-          PGPASSWORD: test_password
-        run: |
-          # Initialize database schema
-          psql -h localhost -U test_user -d vocatio_test -f BD/schema.sql
-          psql -h localhost -U test_user -d vocatio_test -f BD/datos_iniciales.sql
-      
       - name: Start application
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vocatio_test
           SPRING_DATASOURCE_USERNAME: test_user
           SPRING_DATASOURCE_PASSWORD: test_password
+          SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
           JWT_SECRET: test-secret-key-for-jwt-token-generation-min-256-bits
           SERVER_PORT: 8080
         run: |
