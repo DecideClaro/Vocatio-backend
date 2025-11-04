@@ -48,11 +48,9 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vocatio_test
           SPRING_DATASOURCE_USERNAME: vocatio_user
           SPRING_DATASOURCE_PASSWORD: vocatio_pass
-          # Se usa el JWT_SECRET de la rama main (más robusto)
           JWT_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
           SERVER_PORT: 8080 # Aseguramos el puerto 8080
         run: |
-          # Se usa el inicio robusto de la rama main (target/*.jar)
           java -jar target/*.jar &
           echo $! > app.pid
 
@@ -60,7 +58,7 @@ jobs:
         run: |
           echo "Waiting for application to start..."
           for i in {1..30}; do
-            # ¡CORRECCIÓN! Usamos la URL de health check correcta de tu rama m2
+            # URL de Health Check correcta (con /api/v1)
             if curl -sf http://localhost:8080/api/v1/actuator/health > /dev/null; then
               echo "Application is ready!"
               exit 0
