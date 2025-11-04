@@ -41,6 +41,14 @@ jobs:
       - name: Build application
         run: mvn -B -ntp clean package -DskipTests
       
+      - name: Initialize database schema
+        env:
+          PGPASSWORD: test_password
+        run: |
+          # Initialize database schema
+          psql -h localhost -U test_user -d vocatio_test -f BD/schema.sql
+          psql -h localhost -U test_user -d vocatio_test -f BD/datos_iniciales.sql
+      
       - name: Start application
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vocatio_test
