@@ -1,0 +1,133 @@
+name: Postman API Tests
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  postman-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: vocatio_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: 'maven'
+      
+      - name: Build application
+        run: mvn -B -ntp clean package -DskipTests
+      
+      - name: Start application
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vocatio_test
+          SPRING_DATASOURCE_USERNAME: test_user
+          SPRING_DATASOURCE_PASSWORD: test_password
+          JWT_SECRET: test-secret-key-for-jwt-token-generation-min-256-bits
+          SERVER_PORT: 8080
+        run: |
+          java -jar target/vocatio-0.0.1-SNAPSHOT.jar &
+          APP_PID=$!
+          echo "APP_PID=$APP_PID" >> $GITHUB_ENV
+          
+          # Wait for application to start
+          echo "Waiting for application to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8080/api/v1/actuator/health > /dev/null 2>&1; then
+              echo "Application is ready!"
+              break
+            fi
+            echo "Attempt $i: Application not ready yet..."
+            sleep 2
+          done
+      
+      - name: Set up Node.js for Newman
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Newman
+        run: npm install -g newman newman-reporter-htmlextra
+      
+      - name: Run Module 1 Postman Tests
+        run: |
+          newman run postman/Vocatio-M1.postman_collection.json \
+            --environment postman/Vocatio-Universal.postman_environment.json \
+            --env-var "baseUrl=http://localhost:8080/api/v1" \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export newman/module1-report.html \
+            --bail
+        continue-on-error: false
+      
+      - name: Run Module 2 Postman Tests
+        run: |
+          newman run postman/Vocatio-M2.postman_collection.json \
+            --environment postman/Vocatio-Universal.postman_environment.json \
+            --env-var "baseUrl=http://localhost:8080/api/v1" \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export newman/module2-report.html \
+            --bail
+        continue-on-error: false
+      
+      # Modules 3, 4, and 5 are disabled as per requirement
+      # - name: Run Module 3 Postman Tests
+      #   run: |
+      #     newman run postman/Vocatio-M3.postman_collection.json \
+      #       --environment postman/Vocatio-Universal.postman_environment.json \
+      #       --env-var "baseUrl=http://localhost:8080/api/v1" \
+      #       --reporters cli,htmlextra \
+      #       --reporter-htmlextra-export newman/module3-report.html \
+      #       --bail
+      #   continue-on-error: false
+      
+      # - name: Run Module 4 Postman Tests
+      #   run: |
+      #     newman run postman/Vocatio-M4.postman_collection.json \
+      #       --environment postman/Vocatio-Universal.postman_environment.json \
+      #       --env-var "baseUrl=http://localhost:8080/api/v1" \
+      #       --reporters cli,htmlextra \
+      #       --reporter-htmlextra-export newman/module4-report.html \
+      #       --bail
+      #   continue-on-error: false
+      
+      # Module 5 does not exist yet
+      # - name: Run Module 5 Postman Tests
+      #   (when available)
+      
+      - name: Upload Newman Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-test-reports
+          path: newman/*.html
+          retention-days: 30
+      
+      - name: Stop application
+        if: always()
+        run: |
+          if [ ! -z "$APP_PID" ]; then
+            kill $APP_PID || true
+          fi
