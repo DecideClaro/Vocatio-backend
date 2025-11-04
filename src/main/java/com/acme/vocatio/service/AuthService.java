@@ -39,7 +39,7 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
         String normalizedEmail = request.email().trim().toLowerCase();
         if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
-            throw new DuplicateEmailException("El email ya está registrado");
+            throw new DuplicateEmailException("El email ya esta registrado");
         }
 
         User user = new User();
@@ -57,19 +57,19 @@ public class AuthService {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, request.password()));
         } catch (Exception ex) {
-            throw new InvalidCredentialsException("Credenciales inválidas");
+            throw new InvalidCredentialsException("Credenciales invalidas");
         }
 
         User user = userRepository
                 .findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new InvalidCredentialsException("Credenciales inválidas"));
+                .orElseThrow(() -> new InvalidCredentialsException("Credenciales invalidas"));
 
         if (!user.isActive()) {
-            throw new InvalidCredentialsException("Credenciales inválidas");
+            throw new InvalidCredentialsException("Credenciales invalidas");
         }
 
         boolean rememberMe = Boolean.TRUE.equals(request.rememberMe());
-        return buildAuthResponse(user, rememberMe, "Inicio de sesión exitoso");
+        return buildAuthResponse(user, rememberMe, "Inicio de sesion exitoso");
     }
 
     private AuthResponse buildAuthResponse(User user, boolean rememberMe, String message) {
@@ -98,7 +98,7 @@ public class AuthService {
         if (passwordChangeRateLimiter.isBlocked(userId)) {
             long retryAfter = Math.max(1, passwordChangeRateLimiter.getRemainingLockDuration(userId).getSeconds());
             String message = String.format(
-                    "Has superado el límite de intentos. Intenta nuevamente en %d segundos.", retryAfter);
+                    "Has superado el limite de intentos. Intenta nuevamente en %d segundos.", retryAfter);
             throw new PasswordChangeRateLimitException(message, retryAfter);
         }
 
@@ -106,12 +106,12 @@ public class AuthService {
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
             passwordChangeRateLimiter.recordFailure(userId);
-            throw new InvalidCurrentPasswordException("La contraseña actual no es correcta");
+            throw new InvalidCurrentPasswordException("La contrasena actual no es correcta");
         }
 
         if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
             passwordChangeRateLimiter.recordFailure(userId);
-            throw new InvalidPasswordChangeException("La nueva contraseña debe ser diferente a la actual");
+            throw new InvalidPasswordChangeException("La nueva contrasena debe ser diferente a la actual");
         }
 
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));

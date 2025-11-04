@@ -27,8 +27,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 /** Endpoints del perfil del usuario autenticado. */
 @RestController
 @RequestMapping("/users/me")
@@ -59,16 +57,9 @@ public class UserProfileController {
                                     schema = @Schema(example = "{\n  \"message\": \"No autorizado\"\n}")))
             }
     )
-    public ResponseEntity<?>  getCurrentUserProfile(@AuthenticationPrincipal UserPrincipal principal,
-                                                                       @Valid @RequestBody ProfileUpdateRequest request) {
-        try {
-            var updatedProfile = userProfileService.updateCurrentUserProfile(principal.getUser().getId(), request);
-            return ResponseEntity.ok(new ProfileUpdateResponse("Perfil actualizado", updatedProfile));
-        } catch (Exception e) {
-            e.printStackTrace(); // ver en logs
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("error", e.getClass().getSimpleName(), "message", e.getMessage()));
-        }
+    public ResponseEntity<ProfileDto> getCurrentUserProfile(@AuthenticationPrincipal UserPrincipal principal) {
+        ProfileDto profile = userProfileService.getCurrentUserProfile(principal.getUser().getId());
+        return ResponseEntity.ok(profile);
     }
 
     /** Actualiza edad, grado e intereses del usuario. */

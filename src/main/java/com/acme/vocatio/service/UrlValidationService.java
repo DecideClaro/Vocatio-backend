@@ -38,20 +38,34 @@ public class UrlValidationService {
         try {
             // Añadir protocolo si no lo tiene
             String urlToValidate = url.startsWith("http") ? url : "https://" + url;
-            
+
             // Validar formato con regex
             if (!URL_PATTERN.matcher(urlToValidate).matches()) {
+                log.debug("URL no pasó la validación de Regex: {}", url);
                 return false;
             }
 
-            // Validar que se pueda crear una URL válida
-            URI.create(urlToValidate).toURL();
+            // ======================================
+            // INICIO DE LA CORRECCIÓN
+            // ======================================
+
+            // Validar que se pueda crear una URI (esto valida la sintaxis)
+            // Se eliminó la llamada redundante a .toURL()
+            URI.create(urlToValidate);
             return true;
-            
+
+        } catch (IllegalArgumentException e) {
+            // Hacemos el catch más específico para la excepción que lanza URI.create()
+            log.debug("URL inválida (sintaxis URI): {}, Error: {}", url, e.getMessage());
+            return false;
         } catch (Exception e) {
-            log.debug("URL inválida: {}, Error: {}", url, e.getMessage());
+            // Captura genérica por si algo más falla
+            log.warn("Error inesperado validando URL: {}", url, e);
             return false;
         }
+        // ======================================
+        // FIN DE LA CORRECCIÓN
+        // ======================================
     }
 
     /**

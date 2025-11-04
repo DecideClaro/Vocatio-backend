@@ -97,7 +97,7 @@ class UserProfileControllerTest {
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.age[0]").value("La edad debe estar entre 13 y 30 años"));
+                .andExpect(jsonPath("$.errors.age[0]").value("La edad debe estar entre 13 y 30 anos"));
     }
 
     @Test
@@ -115,7 +115,7 @@ class UserProfileControllerTest {
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.grade[0]").value("El grado académico no es válido"));
+                .andExpect(jsonPath("$.errors.grade[0]").value("El grado academico no es valido"));
     }
 
     @Test
@@ -133,7 +133,7 @@ class UserProfileControllerTest {
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.interests[0]").value("Selecciona al menos un interés"));
+                .andExpect(jsonPath("$.errors.interests[0]").value("Selecciona al menos un interes"));
     }
 
     @Test

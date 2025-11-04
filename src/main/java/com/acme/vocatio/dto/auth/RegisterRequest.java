@@ -10,13 +10,13 @@ import jakarta.validation.constraints.Size;
 public record RegisterRequest(
         @Schema(example = "ada.lovelace@example.com", description = "Correo electrónico válido y único")
                 @NotBlank(message = "El email es obligatorio")
-                @Email(message = "Ingresa un email válido")
+                @Email(message = "Ingresa un email valido")
                 String email,
         @Schema(example = "ClaveSegura1", description = "Contraseña que cumple con las políticas de seguridad")
-                @NotBlank(message = "La contraseña es obligatoria")
-                @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
-                @Pattern(regexp = ".*[A-Z].*", message = "La contraseña debe incluir al menos una letra mayúscula")
-                @Pattern(regexp = ".*[0-9].*", message = "La contraseña debe incluir al menos un número")
+                @NotBlank(message = "La contrasena es obligatoria")
+                @Size(min = 8, message = "La contrasena debe tener al menos 8 caracteres")
+                @Pattern(regexp = ".*[A-Z].*", message = "La contrasena debe incluir al menos una letra mayuscula")
+                @Pattern(regexp = ".*[0-9].*", message = "La contrasena debe incluir al menos un numero")
                 String password,
         @Schema(
                 description = "Indica si se debe recordar la sesión del usuario para extender la vigencia del refresh token",

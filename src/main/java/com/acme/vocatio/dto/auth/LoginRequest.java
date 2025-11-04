@@ -8,10 +8,10 @@ import jakarta.validation.constraints.NotBlank;
 public record LoginRequest(
         @Schema(example = "ada.lovelace@example.com")
                 @NotBlank(message = "El email es obligatorio")
-                @Email(message = "Ingresa un email válido")
+                @Email(message = "Ingresa un email valido")
                 String email,
         @Schema(example = "ClaveSegura1")
-                @NotBlank(message = "La contraseña es obligatoria") String password,
+                @NotBlank(message = "La contrasena es obligatoria") String password,
         @Schema(description = "Recuerda la sesión si es verdadero", example = "true")
                 Boolean rememberMe) {
 

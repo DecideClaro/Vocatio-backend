@@ -13,7 +13,7 @@ permissions:
 jobs:
   postman-tests:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:15
@@ -49,6 +49,7 @@ jobs:
           SPRING_DATASOURCE_USERNAME: vocatio_user
           SPRING_DATASOURCE_PASSWORD: vocatio_pass
           JWT_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          SERVER_PORT: 8080 # Puerto 8080 asegurado
         run: |
           java -jar target/*.jar &
           echo $! > app.pid
@@ -57,7 +58,8 @@ jobs:
         run: |
           echo "Waiting for application to start..."
           for i in {1..30}; do
-            if curl -sf http://localhost:8080/actuator/health > /dev/null; then
+            # Health Check con la URL /api/v1 correcta
+            if curl -sf http://localhost:8080/api/v1/actuator/health > /dev/null; then
               echo "Application is ready!"
               exit 0
             fi
@@ -79,6 +81,7 @@ jobs:
         run: |
           newman run postman/Vocatio-M1.postman_collection.json \
             -e postman/Vocatio-Universal.postman_environment.json \
+            --env-var "baseUrl=http://localhost:8080/api/v1" \
             --reporters cli,junit,htmlextra \
             --reporter-junit-export results/junit-M1.xml \
             --reporter-htmlextra-export results/report-M1.html
@@ -88,6 +91,7 @@ jobs:
         run: |
           newman run postman/Vocatio-M2.postman_collection.json \
             -e postman/Vocatio-Universal.postman_environment.json \
+            --env-var "baseUrl=http://localhost:8080/api/v1" \
             --reporters cli,junit,htmlextra \
             --reporter-junit-export results/junit-M2.xml \
             --reporter-htmlextra-export results/report-M2.html
@@ -97,6 +101,7 @@ jobs:
         run: |
           newman run postman/Vocatio-M3.postman_collection.json \
             -e postman/Vocatio-Universal.postman_environment.json \
+            --env-var "baseUrl=http://localhost:8080/api/v1" \
             --reporters cli,junit,htmlextra \
             --reporter-junit-export results/junit-M3.xml \
             --reporter-htmlextra-export results/report-M3.html
@@ -106,6 +111,7 @@ jobs:
         run: |
           newman run postman/Vocatio-M4.postman_collection.json \
             -e postman/Vocatio-Universal.postman_environment.json \
+            --env-var "baseUrl=http://localhost:8080/api/v1" \
             --reporters cli,junit,htmlextra \
             --reporter-junit-export results/junit-M4.xml \
             --reporter-htmlextra-export results/report-M4.html
