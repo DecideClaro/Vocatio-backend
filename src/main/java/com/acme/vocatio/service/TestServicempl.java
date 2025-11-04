@@ -8,6 +8,7 @@ import com.acme.vocatio.model.TestVocacional;
 import com.acme.vocatio.repository.OptionRepository;
 import com.acme.vocatio.repository.TestVocacionalRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TestServicempl implements TestService {
 
     private final TestVocacionalRepository testVocacionalRepository;
@@ -31,6 +33,18 @@ public class TestServicempl implements TestService {
 
     @Override
     public List<AnswerAreaDTO> submitTest(List<AnswerDTO> respuestas) {
+
+        // ==============================================================================
+        // >> M2-02: Validación de Lógica de Negocio
+        // ==============================================================================
+        if (respuestas == null || respuestas.isEmpty()) {
+            log.warn("[M2-02: Validación Fallida] Se intentó finalizar un test (submit) sin respuestas.");
+            // Esta excepción será capturada por GlobalExceptionHandler y devuelta como 400 Bad Request
+            throw new IllegalArgumentException("No se puede procesar un test vocacional sin respuestas.");
+        }
+
+        log.info("[M2-02] Calculando scoring para {} respuestas.", respuestas.size()); // Log de auditoría
+
         // Obtenemos los IDs de las opciones seleccionadas
         List<Integer> idsOpciones = respuestas.stream()
                 .map(AnswerDTO::getIdOpcionSeleccionada)
