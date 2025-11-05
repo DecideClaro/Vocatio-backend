@@ -266,6 +266,8 @@ public class AssessmentService {
                 .orElseThrow(() -> new RuntimeException("Evaluacion no encontrada"));
 
         if (!assessment.getUser().getId().equals(user.getId())) {
+            log.error("[M2-04] Intento de borrado negado (403) Usuario {} intentó borrar Test ID {}",
+                    user.getId(), assessmentId);
             throw new SecurityException("Acceso denegado");
         }
 
