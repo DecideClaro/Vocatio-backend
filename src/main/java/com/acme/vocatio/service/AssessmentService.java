@@ -117,6 +117,8 @@ public class AssessmentService {
                 .orElseThrow(() -> new RuntimeException("Evaluacion no encontrada"));
 
         if (!assessment.getUser().getId().equals(user.getId())) {
+            log.warn("[M2-03] Acceso denegado (403)al test ID: {} para Usuario ID: {}",
+                    assessmentId, user.getId());
             throw new SecurityException("Acceso denegado");
         }
 
