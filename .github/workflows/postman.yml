@@ -43,13 +43,40 @@ jobs:
       - name: Build application
         run: mvn -B -ntp clean package -DskipTests
 
+      - name: Initialize database schema
+        run: |
+          # Wait for PostgreSQL to be fully ready
+          for i in {1..10}; do
+            if PGPASSWORD=vocatio_pass psql -h localhost -U vocatio_user -d vocatio_test -c "SELECT 1;" > /dev/null 2>&1; then
+              echo "PostgreSQL is ready!"
+              break
+            fi
+            echo "Waiting for PostgreSQL... ($i/10)"
+            sleep 2
+          done
+          
+          # Create ENUM types that are needed by Hibernate
+          PGPASSWORD=vocatio_pass psql -h localhost -U vocatio_user -d vocatio_test << 'EOF'
+            CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+            DO $$ 
+            BEGIN
+              IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tipo_recurso_enum') THEN
+                CREATE TYPE tipo_recurso_enum AS ENUM ('pdf', 'video', 'enlace', 'testimonio');
+              END IF;
+              IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'emisor_enum') THEN
+                CREATE TYPE emisor_enum AS ENUM ('usuario', 'bot');
+              END IF;
+            END$$;
+          EOF
+
       - name: Start application in background
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vocatio_test
           SPRING_DATASOURCE_USERNAME: vocatio_user
           SPRING_DATASOURCE_PASSWORD: vocatio_pass
           JWT_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-          SERVER_PORT: 8080 # Puerto 8080 asegurado
+          SERVER_PORT: 8080
+          SERVER_CONTEXT_PATH: /api/v1
         run: |
           java -jar target/*.jar &
           echo $! > app.pid
@@ -58,7 +85,7 @@ jobs:
         run: |
           echo "Waiting for application to start..."
           for i in {1..30}; do
-            # Health Check con la URL /api/v1 correcta
+            # Health Check with context path /api/v1
             if curl -sf http://localhost:8080/api/v1/actuator/health > /dev/null; then
               echo "Application is ready!"
               exit 0
