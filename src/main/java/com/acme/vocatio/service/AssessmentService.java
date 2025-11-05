@@ -10,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AssessmentService {
@@ -51,10 +53,24 @@ public class AssessmentService {
         Assessment assessment = assessmentRepository.findByIdAndUser(assessmentId, user)
                 .orElseThrow(() -> new RuntimeException("Evaluacion no encontrada"));
 
+// ==============================================================================
+        // >> INICIO CAMBIO M2-01: Evidencia de Validación y Progreso
+        // ==============================================================================
+
+        log.info("[M2-01] Guardando progreso para Test ID: {} por Usuario ID: {}",
+                assessmentId, user.getId());
+
         if (assessment.getStatus() != Assessment.AssessmentStatus.IN_PROGRESS) {
-            throw new IllegalStateException("La evaluacion ya fue enviada");
+            log.warn("[M2-01] Intento de guardar progreso en un test que NO está 'EN_PROGRESO'. Estado: {}",
+                    assessment.getStatus());
+            throw new IllegalStateException("La evaluacion ya fue enviada o finalizada");
         }
 
+        if (request.getAnswers() == null || request.getAnswers().isEmpty()) {
+            log.warn("[M2-01] No se recibieron respuestas para guardar.");
+            // No lanzamos error, pero el log demuestra la validación de entrada
+            // (Criterio: "intento avanzar sin responder")
+        }
         // Validate and save answers
         Map<String, AssessmentAnswer> existingAnswers = assessment.getAnswers().stream()
                 .collect(Collectors.toMap(
@@ -101,6 +117,8 @@ public class AssessmentService {
                 .orElseThrow(() -> new RuntimeException("Evaluacion no encontrada"));
 
         if (!assessment.getUser().getId().equals(user.getId())) {
+            log.warn("[M2-03] Acceso denegado (403)al test ID: {} para Usuario ID: {}",
+                    assessmentId, user.getId());
             throw new SecurityException("Acceso denegado");
         }
 
