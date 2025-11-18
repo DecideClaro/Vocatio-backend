@@ -7,6 +7,9 @@ import com.acme.vocatio.dto.profile.PersonalDataUpdateResponse;
 import com.acme.vocatio.dto.profile.ProfileDto;
 import com.acme.vocatio.dto.profile.ProfileUpdateRequest;
 import com.acme.vocatio.dto.profile.ProfileUpdateResponse;
+import com.acme.vocatio.exception.UserNotFoundException;
+import com.acme.vocatio.model.User;
+import com.acme.vocatio.repository.UserRepository;
 import com.acme.vocatio.security.UserPrincipal;
 import com.acme.vocatio.service.UserAccountService;
 import com.acme.vocatio.service.UserProfileService;
@@ -114,9 +117,9 @@ public class UserProfileController {
                                     schema = @Schema(example = "{\n  \"message\": \"No autorizado\"\n}")))
             }
     )
-    public ResponseEntity<PersonalDataUpdateResponse> updatePersonalData(
+    public ResponseEntity<PersonalDataUpdateResponse> updatePersonalData(            
             @AuthenticationPrincipal UserPrincipal principal, @Valid @RequestBody PersonalDataUpdateRequest request) {
-        ProfileDto updatedProfile = userProfileService.updatePersonalData(principal.getUser().getId(), request);
+        ProfileDto updatedProfile = userProfileService.updatePersonalData(principal.getUserId(), request);
         return ResponseEntity.ok(new PersonalDataUpdateResponse("Datos personales actualizados", updatedProfile));
     }
 

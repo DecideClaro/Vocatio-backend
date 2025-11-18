@@ -106,12 +106,12 @@ public class AuthService {
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
             passwordChangeRateLimiter.recordFailure(userId);
-            throw new InvalidCurrentPasswordException("La contrasena actual no es correcta");
+            throw new InvalidCurrentPasswordException("La contraseña actual no es correcta");
         }
 
         if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
             passwordChangeRateLimiter.recordFailure(userId);
-            throw new InvalidPasswordChangeException("La nueva contrasena debe ser diferente a la actual");
+            throw new InvalidPasswordChangeException("La nueva contraseña debe ser diferente a la actual");
         }
 
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));

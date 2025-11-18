@@ -1,5 +1,13 @@
 package com.acme.vocatio.service;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.acme.vocatio.dto.profile.PersonalDataUpdateRequest;
 import com.acme.vocatio.dto.profile.ProfileDto;
 import com.acme.vocatio.dto.profile.ProfileUpdateRequest;
@@ -13,13 +21,8 @@ import com.acme.vocatio.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /** Orquesta la gestión del perfil actual. */
 @Service
@@ -75,7 +78,7 @@ public class UserProfileService {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
         Profile profile = profileRepository
-                .findById(userId)
+                .findById(user.getId())
                 .orElseGet(() -> {
                     Profile newProfile = new Profile();
                     newProfile.setUser(user);
@@ -140,9 +143,9 @@ public class UserProfileService {
 
     /** Crea el DTO usando los datos existentes. */
     private ProfileDto toDto(User user, Profile profile) {
-        List<String> interests = profile == null ? List.of() : readInterests(profile.getPersonalInterests());
+        List<String> interests = profile == null ? List.of() : readInterests(profile.getPersonalInterests().toString());
         Map<String, Boolean> preferences =
-                profile == null ? Map.of() : readPreferences(profile.getPublicPreferences());
+                profile == null ? Map.of() : readPreferences(profile.getPublicPreferences().toString());
         return toDto(user, profile, interests, preferences);
     }
 
@@ -173,7 +176,7 @@ public class UserProfileService {
 
     private ProfileDto toDto(User user, Profile profile, List<String> interests) {
         Map<String, Boolean> preferences =
-                profile == null ? Map.of() : readPreferences(profile.getPublicPreferences());
+                profile == null ? Map.of() : readPreferences(profile.getPublicPreferences().toString());
         return toDto(user, profile, interests, preferences);
     }
 
