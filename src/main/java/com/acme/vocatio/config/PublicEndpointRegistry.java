@@ -20,8 +20,8 @@ public class PublicEndpointRegistry {
     private static final List<String> BASE_PATTERNS = List.of(
             "/",
             "/error",
-            "/auth/login",
-            "/auth/register",
+            "/auth/login", // <-- CORREGIDO
+            "/auth/register", // <-- CORREGIDO
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
@@ -31,8 +31,8 @@ public class PublicEndpointRegistry {
     );
 
     private static final List<String> READ_ONLY_GET_PATTERNS = List.of(
-            "/api/careers",
-            "/api/careers/**"
+            "/api/careers", // <-- CORREGIDO
+            "/api/careers/**" // <-- CORREGIDO
     );
 
     private final ServerProperties serverProperties;
