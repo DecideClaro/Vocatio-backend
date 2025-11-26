@@ -3,15 +3,24 @@ services:
     name: vocatio-backend
     runtime: docker
     plan: free
+
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
-      - key: JWT_SECRET
-        generateValue: true
-    healthCheckPath: /actuator/health
 
-databases:
-  - name: vocatio-database
-    databaseName: vocatio_db
-    user: vocatio_user
-    plan: free
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://dpg-d4eic2ogjchc73fht50g-a.oregon-postgres.render.com:5432/vocatio_db_whza?sslmode=require
+
+      - key: SPRING_DATASOURCE_USERNAME
+        value: postgresadmin
+
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: y9NAhpRkaC62uJLatv4E9wrA8OCd3NEj
+
+      - key: JWT_SECRET
+        value: Vm9jYXRpb1N1cGVyU2VjcmV0S2V5Rm9ySldUVG9rZW5HZW5lcmF0aW9uMjAyNCFAIw==
+
+      - key: DEEPSEEK_API_KEY
+        value: sk-8e4e082df12541bba1cd2295f203c876
+
+    healthCheckPath: /actuator/health

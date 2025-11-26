@@ -31,5 +31,5 @@ deepseek.api-url=https://api.deepseek.com/chat/completions
 deepseek.model=deepseek-chat
 deepseek.timeout=PT15S
 deepseek.max-retries=1
-deepseek.api-key=sk-8e4e082df12541bba1cd2295f203c876
+deepseek.api-key=YOUR_DEEPSEEK_API_KEY_HERE
 

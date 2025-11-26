@@ -1,5 +1,6 @@
 package com.acme.vocatio.web;
 
+import com.acme.vocatio.exception.AiServiceException;
 import com.acme.vocatio.exception.CareerNotFoundException;
 import com.acme.vocatio.exception.DuplicateEmailException;
 import com.acme.vocatio.exception.InvalidAccountDeletionConfirmationException;
@@ -129,5 +130,14 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    /** Errores en la proxy de IA (DeepSeek). */
+    @ExceptionHandler(AiServiceException.class)
+    public ResponseEntity<Map<String, Object>> handleAiService(AiServiceException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        HttpStatus status = ex.getStatus() != null ? ex.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(status).body(body);
     }
 }

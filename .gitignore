@@ -35,3 +35,12 @@ build/
 .manual.md
 
 **.env
+render.yaml
+./src/main/resources/application-prod.properties
+./src/main/resources/application.properties
+./src/main/resources/application-prod.properties
+docker-compose.yml
+docker-compose.yml
+render.yaml
+src/main/resources/application-prod.properties
+src/main/resources/application.properties

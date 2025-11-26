@@ -18,13 +18,13 @@ services:
       #PORT: 8080
       #ENV: "local"
 
-      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-d4eic2ogjchc73fht50g-a.oregon-postgres.render.com:5432/vocatio_db_whza?sslmode=require
+      SPRING_DATASOURCE_URL: YOUR_URL_HERE
       SPRING_DATASOURCE_USERNAME: postgresadmin
-      SPRING_DATASOURCE_PASSWORD: y9NAhpRkaC62uJLatv4E9wrA8OCd3NEj
+      SPRING_DATASOURCE_PASSWORD: YOUR_PASSWORD_HERE
 
       #JWT_SECRET: ${JWT_SECRET}   
-      JWT_SECRET: Vm9jYXRpb1N1cGVyU2VjcmV0S2V5Rm9ySldUVG9rZW5HZW5lcmF0aW9uMjAyNCFAIw==
-      DEEPSEEK_API_KEY: sk-8e4e082df12541bba1cd2295f203c876
+      JWT_SECRET: YOUR_JWT_SECRET_HERE
+      DEEPSEEK_API_KEY: YOUR_DEEPSEEK_API_KEY_HERE
 
     ports:
       - "8080:8080"
@@ -38,9 +38,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
-      - "5434:5432"   # HOST:CONTENEDOR  34
+      - "5434:5432" # HOST:CONTENEDOR  34
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d vocatio_db"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d vocatio_db" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,4 +48,5 @@ services:
       - postgres_data:/var/lib/postgresql/data
 volumes:
   postgres_data:
+
 
